@@ -59,9 +59,8 @@ $PAGE->set_context($context);
 // Everyone who can submit, restricted to the groups the teacher may see.
 $groupmode = groups_get_activity_groupmode($cm, $course);
 $currentgroup = groups_get_activity_group($cm, true);
-$userfields = \core_user\fields::for_name()->get_sql('u', false, '', '', false)->selects;
 $participants = get_enrolled_users($context, 'mod/pagecheck:submit', (int) $currentgroup,
-    'u.id' . $userfields, 'u.lastname, u.firstname');
+    pagecheck_user_fields_sql(), 'u.lastname, u.firstname');
 
 $rows = report::build_rows($participants, $manager, $filter);
 

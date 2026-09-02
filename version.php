@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_pagecheck';
-$plugin->version   = 2026090201;
+$plugin->version   = 2026090202;
 $plugin->requires  = 2022112800; // Moodle 4.1 LTS.
 $plugin->supported = [401, 501];  // Moodle 4.1 up to 5.1.
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1.1';
+$plugin->release   = '0.1.2';

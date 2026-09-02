@@ -61,9 +61,8 @@ if ($action === 'add' || $action === 'edit') {
             $targets[$group->id] = format_string($group->name, true, ['context' => $context]);
         }
     } else {
-        $userfields = \core_user\fields::for_name()->get_sql('u', false, '', '', false)->selects;
         $users = get_enrolled_users($context, 'mod/pagecheck:submit', 0,
-            'u.id' . $userfields, 'u.lastname, u.firstname');
+            pagecheck_user_fields_sql(), 'u.lastname, u.firstname');
         $targets = [];
         foreach ($users as $user) {
             $targets[$user->id] = fullname($user);
