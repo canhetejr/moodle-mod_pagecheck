@@ -51,15 +51,42 @@ Ghostscript é apenas um último recurso opcional, desligado por padrão.
 
 ## Instalação
 
-1. Copie o conteúdo deste repositório para `mod/pagecheck/` dentro do seu Moodle.
-2. Acesse **Administração do site → Notificações** e conclua a instalação.
-3. Opcional: **Administração do site → Plugins → Atividades → Envio com verificação de páginas**
-   define os tipos de arquivo padrão e liga o uso do Ghostscript.
+O diretório do plugin dentro do Moodle precisa se chamar exatamente `pagecheck` — é assim que o
+Moodle liga os arquivos ao componente `mod_pagecheck`.
+
+> ⚠️ O ZIP de **"Download source code"** do GitHub **não** funciona no instalador: ele vem com a
+> pasta raiz nomeada a partir do repositório e da branch, e o Moodle recusa com
+> *"Invalid plugin name"*. Use um dos caminhos abaixo.
+
+### Pela interface (ZIP)
+
+1. Baixe `pagecheck.zip` — nos artefatos da execução do CI, ou anexado a uma release.
+2. **Administração do site → Plugins → Instalar plugins**, envie o arquivo ZIP.
+3. Confirme a instalação.
+
+### Por git (recomendado em servidor)
 
 ```bash
 cd /caminho/do/moodle/mod
 git clone https://github.com/canhetejr/TCC-M.git pagecheck
 ```
+
+Depois acesse **Administração do site → Notificações** para concluir a instalação.
+
+### Gerando o ZIP localmente
+
+```bash
+./tools/package.sh          # empacota o HEAD em dist/pagecheck.zip
+./tools/package.sh v1.0.0   # ou uma tag específica
+```
+
+O script usa `git archive`, então o pacote contém exatamente os arquivos versionados: nada de
+sobras não commitadas entrarem sem querer. Se a árvore de trabalho estiver suja, ele avisa e para.
+
+### Configuração opcional
+
+**Administração do site → Plugins → Atividades → Envio com verificação de páginas** define os
+tipos de arquivo padrão e liga o uso do Ghostscript.
 
 ## Verificação manual
 

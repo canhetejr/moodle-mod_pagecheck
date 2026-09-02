@@ -90,3 +90,36 @@ jobs:
       - name: Behat
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci behat --profile chrome
+
+  package:
+    name: Build the installable ZIP
+    runs-on: ubuntu-22.04
+    needs: test
+
+    steps:
+      - name: Check out the plugin
+        uses: actions/checkout@v4
+        with:
+          # git archive reads a commit, so the full history has to be present.
+          fetch-depth: 0
+
+      - name: Build the package
+        run: tools/package.sh "$GITHUB_SHA"
+
+      - name: Check the archive has the root folder Moodle expects
+        run: |
+          unzip -l dist/pagecheck.zip | grep -q 'pagecheck/version.php'
+          ! unzip -l dist/pagecheck.zip | grep -q '\.github/'
+
+      - name: Upload the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: pagecheck-zip
+          path: dist/pagecheck.zip
+          if-no-files-found: error
+
+      - name: Attach the package to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/pagecheck.zip
