@@ -213,7 +213,7 @@ class submission_manager {
         $files = get_file_storage()->get_area_files(
             $this->context->id,
             'mod_pagecheck',
-            PAGECHECK_FILEAREA_SUBMISSION,
+            self::FILEAREA,
             $submission->id,
             'filename',
             false
@@ -376,7 +376,7 @@ class submission_manager {
             $draftitemid,
             $this->context->id,
             'mod_pagecheck',
-            PAGECHECK_FILEAREA_SUBMISSION,
+            self::FILEAREA,
             $submission->id,
             $this->get_filemanager_options($rules)
         );
@@ -457,6 +457,34 @@ class submission_manager {
         $DB->set_field('pagecheck_submissions', 'status', self::STATUS_REOPENED, ['id' => $submission->id]);
 
         return $submission;
+    }
+
+    /**
+     * Whether a user may start a further attempt.
+     *
+     * Without this, a maximum attempts setting greater than one would be unreachable: a student
+     * whose work has been sent for grading can no longer edit it, so there has to be a way to
+     * begin the next attempt.
+     *
+     * @param int $userid the user
+     * @param \stdClass|null $submission the attempt, looked up when not given
+     * @return bool
+     */
+    public function can_start_new_attempt(int $userid, $submission = null): bool {
+        $rules = $this->get_rules($userid);
+        if ($rules->is_not_open_yet() || $rules->is_closed()) {
+            return false;
+        }
+
+        $submission = $submission ?: $this->get_submission($userid);
+        if (!$submission || $submission->status !== self::STATUS_SUBMITTED) {
+            return false;
+        }
+
+        if ($rules->maxattempts < 0) {
+            return true;
+        }
+        return $this->get_attempts_used($userid) < $rules->maxattempts;
     }
 
     /**

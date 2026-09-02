@@ -125,6 +125,9 @@ $string['editsubmission'] = 'Editar envio';
 $string['submitforgrading'] = 'Enviar para avaliação';
 $string['confirmsubmission'] = 'Depois de enviar este trabalho para avaliação você não poderá mais alterá-lo. Tem certeza?';
 $string['alreadysubmitted'] = 'Este trabalho já foi enviado para avaliação.';
+$string['newattempt'] = 'Iniciar nova tentativa';
+$string['confirmnewattempt'] = 'O trabalho já enviado continua registrado, e a nova tentativa começa vazia. Deseja continuar?';
+$string['errornonewattempt'] = 'Você não pode iniciar outra tentativa nesta atividade.';
 $string['submissionsent'] = 'Seu trabalho foi enviado para avaliação.';
 $string['submissionrefused'] = 'Este envio não foi aceito.';
 $string['filessaved'] = 'Seus arquivos foram salvos. Eles ainda não foram enviados para avaliação.';
@@ -192,7 +195,7 @@ $string['errornotargets'] = 'Não há ninguém para quem criar uma exceção.';
 
 // Teacher pages.
 $string['viewsubmissions'] = 'Ver envios';
-$string['summarysubmitted'] = '{$a->submitted} de {$a->attempts} participantes enviaram o trabalho para avaliação.';
+$string['summarysubmitted'] = '{$a->submitted} de {$a->participants} participantes enviaram o trabalho para avaliação.';
 $string['nosubmissions'] = 'Nada a exibir.';
 $string['noinstances'] = 'Não há atividades de verificação de páginas neste curso.';
 $string['savegrades'] = 'Salvar notas';

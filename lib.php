@@ -167,16 +167,19 @@ function pagecheck_delete_instance($id) {
  * @return int a GRADE_UPDATE_* constant
  */
 function pagecheck_grade_item_update($pagecheck, $grades = null) {
-    $item = [
-        'itemname' => clean_param($pagecheck->name, PARAM_NOTAGS),
-        'gradetype' => GRADE_TYPE_VALUE,
-        'grademax'  => (int) $pagecheck->grade,
-        'grademin'  => 0,
-    ];
+    $item = ['itemname' => clean_param($pagecheck->name, PARAM_NOTAGS)];
+    $grade = (int) $pagecheck->grade;
 
-    if ((int) $pagecheck->grade == 0) {
+    if ($grade > 0) {
+        $item['gradetype'] = GRADE_TYPE_VALUE;
+        $item['grademax'] = $grade;
+        $item['grademin'] = 0;
+    } else if ($grade < 0) {
+        // A negative value is how the grade form reports a scale.
+        $item['gradetype'] = GRADE_TYPE_SCALE;
+        $item['scaleid'] = -$grade;
+    } else {
         $item['gradetype'] = GRADE_TYPE_NONE;
-        unset($item['grademax'], $item['grademin']);
     }
 
     if ($grades === 'reset') {
@@ -330,6 +333,49 @@ function pagecheck_update_calendar_events($pagecheck) {
             calendar_event::create($data, false);
         }
     }
+}
+
+/**
+ * What the calendar and the timeline offer a user to do about an event.
+ *
+ * @param calendar_event $event the event being shown
+ * @param \core_calendar\action_factory $factory the factory that builds the action
+ * @param int $userid the user the event is shown to, 0 for the current user
+ * @return \core_calendar\local\event\entities\action_interface|null
+ */
+function mod_pagecheck_core_calendar_provide_event_action(calendar_event $event,
+        \core_calendar\action_factory $factory, $userid = 0) {
+    global $DB, $USER;
+
+    $userid = $userid ?: $USER->id;
+
+    $modinfo = get_fast_modinfo($event->courseid, $userid);
+    if (empty($modinfo->instances['pagecheck'][$event->instance])) {
+        return null;
+    }
+    $cm = $modinfo->instances['pagecheck'][$event->instance];
+    if (!$cm->uservisible) {
+        return null;
+    }
+
+    $context = context_module::instance($cm->id);
+    if (!has_capability('mod/pagecheck:submit', $context, $userid)) {
+        // A teacher has nothing to submit, so the event stays informational for them.
+        return null;
+    }
+
+    $submitted = $DB->record_exists_select(
+        'pagecheck_submissions',
+        'pagecheckid = :pagecheckid AND userid = :userid AND timesubmitted > 0',
+        ['pagecheckid' => $event->instance, 'userid' => $userid]
+    );
+
+    return $factory->create_instance(
+        get_string($submitted ? 'viewsubmissions' : 'addsubmission', 'mod_pagecheck'),
+        new moodle_url('/mod/pagecheck/view.php', ['id' => $cm->id]),
+        1,
+        !$submitted
+    );
 }
 
 /**

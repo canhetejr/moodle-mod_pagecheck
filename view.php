@@ -66,16 +66,12 @@ if (!empty($pagecheck->intro)) {
 
 if (has_capability('mod/pagecheck:viewallsubmissions', $context)) {
     // Teacher view: a summary and the way into the submissions report.
-    $counts = $DB->get_record_sql(
-        'SELECT COUNT(1) AS attempts,
-                SUM(CASE WHEN timesubmitted > 0 THEN 1 ELSE 0 END) AS submitted
-           FROM {pagecheck_submissions}
-          WHERE pagecheckid = :pagecheckid AND latest = 1',
-        ['pagecheckid' => $pagecheck->id]
-    );
+    $submitted = $DB->count_records_select('pagecheck_submissions',
+        'pagecheckid = :pagecheckid AND latest = 1 AND timesubmitted > 0',
+        ['pagecheckid' => $pagecheck->id]);
     echo $OUTPUT->box(get_string('summarysubmitted', 'mod_pagecheck', (object) [
-        'submitted' => (int) ($counts->submitted ?? 0),
-        'attempts' => (int) ($counts->attempts ?? 0),
+        'submitted' => $submitted,
+        'participants' => count_enrolled_users($context, 'mod/pagecheck:submit'),
     ]));
     echo $OUTPUT->single_button(
         new moodle_url('/mod/pagecheck/submissions.php', ['id' => $cm->id]),
@@ -122,6 +118,14 @@ if (has_capability('mod/pagecheck:submit', $context)) {
     if (!$canedit && $submission && $submission->status === submission_manager::STATUS_SUBMITTED) {
         echo $OUTPUT->notification(get_string('alreadysubmitted', 'mod_pagecheck'),
             \core\output\notification::NOTIFY_INFO);
+
+        if ($manager->can_start_new_attempt($USER->id, $submission)) {
+            echo $OUTPUT->single_button(
+                new moodle_url('/mod/pagecheck/newattempt.php', ['id' => $cm->id]),
+                get_string('newattempt', 'mod_pagecheck'),
+                'get'
+            );
+        }
     }
 }
 

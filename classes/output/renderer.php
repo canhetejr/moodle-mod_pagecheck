@@ -83,7 +83,7 @@ class renderer extends \plugin_renderer_base {
                 $url = \moodle_url::make_pluginfile_url(
                     $manager->get_context()->id,
                     'mod_pagecheck',
-                    PAGECHECK_FILEAREA_SUBMISSION,
+                    submission_manager::FILEAREA,
                     $submission->id,
                     $file->get_filepath(),
                     $file->get_filename()

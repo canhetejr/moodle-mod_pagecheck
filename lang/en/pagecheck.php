@@ -125,6 +125,9 @@ $string['editsubmission'] = 'Edit submission';
 $string['submitforgrading'] = 'Send for grading';
 $string['confirmsubmission'] = 'Once you send this work for grading you will not be able to change it. Are you sure?';
 $string['alreadysubmitted'] = 'This work has already been sent for grading.';
+$string['newattempt'] = 'Start a new attempt';
+$string['confirmnewattempt'] = 'The work you already sent stays on record, and the new attempt starts empty. Do you want to continue?';
+$string['errornonewattempt'] = 'You cannot start another attempt in this activity.';
 $string['submissionsent'] = 'Your work has been sent for grading.';
 $string['submissionrefused'] = 'This submission was not accepted.';
 $string['filessaved'] = 'Your files have been saved. They have not been sent for grading yet.';
@@ -192,7 +195,7 @@ $string['errornotargets'] = 'There is nobody to create an override for.';
 
 // Teacher pages.
 $string['viewsubmissions'] = 'View submissions';
-$string['summarysubmitted'] = '{$a->submitted} of {$a->attempts} participants have sent work for grading.';
+$string['summarysubmitted'] = '{$a->submitted} of {$a->participants} participants have sent work for grading.';
 $string['nosubmissions'] = 'Nothing to show.';
 $string['noinstances'] = 'There are no page check activities in this course.';
 $string['savegrades'] = 'Save grades';

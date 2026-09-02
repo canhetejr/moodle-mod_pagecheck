@@ -239,7 +239,7 @@ class rules {
      * @param int|null $time the moment to test, defaults to now
      * @return bool
      */
-    public function is_late(int $time = null): bool {
+    public function is_late(?int $time = null): bool {
         $time = $time === null ? time() : $time;
         return $this->duedate > 0 && $time > $this->duedate;
     }
@@ -250,7 +250,7 @@ class rules {
      * @param int|null $time the moment to test, defaults to now
      * @return bool
      */
-    public function is_closed(int $time = null): bool {
+    public function is_closed(?int $time = null): bool {
         $time = $time === null ? time() : $time;
         if ($this->cutoffdate > 0 && $time > $this->cutoffdate) {
             return true;
@@ -264,7 +264,7 @@ class rules {
      * @param int|null $time the moment to test, defaults to now
      * @return bool
      */
-    public function is_not_open_yet(int $time = null): bool {
+    public function is_not_open_yet(?int $time = null): bool {
         $time = $time === null ? time() : $time;
         return $this->allowsubmissionsfromdate > 0 && $time < $this->allowsubmissionsfromdate;
     }

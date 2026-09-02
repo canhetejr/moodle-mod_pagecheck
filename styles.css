@@ -1,0 +1,21 @@
+/* Styles for mod_pagecheck. */
+
+.path-mod-pagecheck .pagecheck-issues .alert:last-child {
+    margin-bottom: 0;
+}
+
+.path-mod-pagecheck .pagecheck-issues {
+    margin-bottom: 1rem;
+}
+
+.path-mod-pagecheck .pagecheck-status table {
+    margin-bottom: 1.5rem;
+}
+
+.path-mod-pagecheck .pagecheck-status th {
+    width: 30%;
+}
+
+.path-mod-pagecheck .pagecheck-client-issues:empty {
+    display: none;
+}

@@ -26,13 +26,14 @@ require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/pagecheck/lib.php');
 
 use mod_pagecheck\local\issue;
+use mod_pagecheck\local\report;
 use mod_pagecheck\local\submission_manager;
 
 $id = required_param('id', PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);
 $perpage = optional_param('perpage', 25, PARAM_INT);
 $download = optional_param('download', '', PARAM_ALPHA);
-$filter = optional_param('filter', 'all', PARAM_ALPHA);
+$filter = optional_param('filter', report::FILTER_ALL, PARAM_ALPHA);
 
 list($course, $cm) = get_course_and_cm_from_cmid($id, 'pagecheck');
 $pagecheck = $DB->get_record('pagecheck', ['id' => $cm->instance], '*', MUST_EXIST);
@@ -62,59 +63,7 @@ $userfields = \core_user\fields::for_name()->get_sql('u', false, '', '', false)-
 $participants = get_enrolled_users($context, 'mod/pagecheck:submit', (int) $currentgroup,
     'u.id' . $userfields, 'u.lastname, u.firstname');
 
-/**
- * Assemble one report row per participant.
- *
- * @param array $participants the users to report on
- * @param submission_manager $manager the manager of this activity
- * @param string $filter which rows to keep: all, submitted, notsubmitted or withissues
- * @return array
- */
-function pagecheck_build_rows(array $participants, submission_manager $manager, string $filter): array {
-    global $DB;
-
-    $rows = [];
-    $grades = $DB->get_records_menu('pagecheck_grades',
-        ['pagecheckid' => $manager->get_instance()->id], '', 'userid, grade');
-
-    foreach ($participants as $user) {
-        $submission = $manager->get_submission((int) $user->id);
-        $issues = [];
-        $pages = null;
-
-        if ($submission) {
-            $rules = $manager->get_rules((int) $user->id);
-            $results = $manager->analyse($submission, $rules);
-            $issues = $manager->validate((int) $user->id, $submission);
-            $pages = $submission->totalpages;
-        }
-
-        $status = $submission ? $submission->status : submission_manager::STATUS_NEW;
-
-        if ($filter === 'submitted' && $status !== submission_manager::STATUS_SUBMITTED) {
-            continue;
-        }
-        if ($filter === 'notsubmitted' && $status === submission_manager::STATUS_SUBMITTED) {
-            continue;
-        }
-        if ($filter === 'withissues' && !$issues) {
-            continue;
-        }
-
-        $rows[] = (object) [
-            'user' => $user,
-            'submission' => $submission,
-            'status' => $status,
-            'pages' => $pages,
-            'issues' => $issues,
-            'grade' => isset($grades[$user->id]) ? $grades[$user->id] : null,
-        ];
-    }
-
-    return $rows;
-}
-
-$rows = pagecheck_build_rows($participants, $manager, $filter);
+$rows = report::build_rows($participants, $manager, $filter);
 
 // Save quick grades.
 if ($cangrade && optional_param('savegrades', 0, PARAM_BOOL) && confirm_sesskey()) {
@@ -203,14 +152,8 @@ if ($groupmode != NOGROUPS) {
     groups_print_activity_menu($cm, $baseurl);
 }
 
-$filterurl = new moodle_url($baseurl);
-$filters = [
-    'all' => get_string('filterall', 'mod_pagecheck'),
-    'submitted' => get_string('filtersubmitted', 'mod_pagecheck'),
-    'notsubmitted' => get_string('filternotsubmitted', 'mod_pagecheck'),
-    'withissues' => get_string('filterwithissues', 'mod_pagecheck'),
-];
-echo $OUTPUT->single_select($filterurl, 'filter', $filters, $filter, null, 'filterform');
+echo $OUTPUT->single_select(new moodle_url($baseurl), 'filter',
+    report::get_filter_options(), $filter, null, 'filterform');
 
 if (!$pagerows) {
     echo $OUTPUT->notification(get_string('nosubmissions', 'mod_pagecheck'),
