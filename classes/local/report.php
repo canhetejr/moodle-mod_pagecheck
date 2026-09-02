@@ -47,6 +47,80 @@ class report {
     const FILTER_WITHISSUES = 'withissues';
 
     /**
+     * The SELECT list for reading a participant.
+     *
+     * \core_user\fields::get_sql() decides on its own whether to lead with a comma, and that
+     * choice is what the caller passes in. Normalising it in one place means no caller has to know
+     * the convention, and gluing the id column on can never run two column names together.
+     *
+     * @return string
+     */
+    public static function user_fields_sql(): string {
+        $fields = \core_user\fields::for_name()->get_sql('u', false, '', '', false)->selects;
+        $fields = ltrim(trim($fields), ',');
+
+        return $fields === '' ? 'u.id' : 'u.id, ' . $fields;
+    }
+
+    /**
+     * Everyone the report should account for.
+     *
+     * This is the enrolled participants plus anyone who actually submitted, because the two are
+     * not the same set. A site administrator is not enrolled, and a student can be unenrolled
+     * after handing work in; in both cases the work is still there, and a teacher who opens this
+     * page must not be told there is nothing to show. Users who turn up only through their
+     * submission are flagged so the teacher can see why they are listed.
+     *
+     * @param \context_module $context the module context
+     * @param int $pagecheckid the activity instance id
+     * @param int $groupid the group being viewed, or 0 for all of them
+     * @return \stdClass[] user records keyed by user id
+     */
+    public static function get_participants(\context_module $context, int $pagecheckid,
+            int $groupid = 0): array {
+        global $DB;
+
+        $fields = self::user_fields_sql();
+
+        $participants = get_enrolled_users($context, 'mod/pagecheck:submit', $groupid,
+            $fields, 'u.lastname, u.firstname');
+
+        $submitters = $DB->get_records_sql(
+            "SELECT DISTINCT $fields
+               FROM {user} u
+               JOIN {pagecheck_submissions} s ON s.userid = u.id
+              WHERE s.pagecheckid = :pagecheckid AND u.deleted = 0",
+            ['pagecheckid' => $pagecheckid]
+        );
+
+        $added = false;
+        foreach ($submitters as $user) {
+            if (isset($participants[$user->id])) {
+                continue;
+            }
+            if ($groupid > 0 && !groups_is_member($groupid, $user->id)) {
+                continue;
+            }
+            $user->pagechecknotenrolled = true;
+            $participants[$user->id] = $user;
+            $added = true;
+        }
+
+        if ($added) {
+            // get_enrolled_users() already sorted its own rows; re-sort once the extras are in.
+            foreach ($participants as $user) {
+                $user->pagechecksortname = $user->lastname . ' ' . $user->firstname;
+            }
+            \core_collator::asort_objects_by_property($participants, 'pagechecksortname');
+            foreach ($participants as $user) {
+                unset($user->pagechecksortname);
+            }
+        }
+
+        return $participants;
+    }
+
+    /**
      * Build one row per participant.
      *
      * @param array $participants the users to report on

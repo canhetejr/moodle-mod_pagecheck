@@ -62,7 +62,7 @@ if ($action === 'add' || $action === 'edit') {
         }
     } else {
         $users = get_enrolled_users($context, 'mod/pagecheck:submit', 0,
-            pagecheck_user_fields_sql(), 'u.lastname, u.firstname');
+            \mod_pagecheck\local\report::user_fields_sql(), 'u.lastname, u.firstname');
         $targets = [];
         foreach ($users as $user) {
             $targets[$user->id] = fullname($user);

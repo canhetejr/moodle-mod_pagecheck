@@ -197,6 +197,7 @@ $string['errornotargets'] = 'Não há ninguém para quem criar uma exceção.';
 $string['viewsubmissions'] = 'Ver envios';
 $string['summarysubmitted'] = '{$a->submitted} de {$a->participants} participantes enviaram o trabalho para avaliação.';
 $string['nosubmissions'] = 'Nada a exibir.';
+$string['notenrolled'] = 'Não inscrito';
 $string['noinstances'] = 'Não há atividades de verificação de páginas neste curso.';
 $string['savegrades'] = 'Salvar notas';
 $string['gradessaved'] = '{$a} notas salvas.';

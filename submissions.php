@@ -59,8 +59,7 @@ $PAGE->set_context($context);
 // Everyone who can submit, restricted to the groups the teacher may see.
 $groupmode = groups_get_activity_groupmode($cm, $course);
 $currentgroup = groups_get_activity_group($cm, true);
-$participants = get_enrolled_users($context, 'mod/pagecheck:submit', (int) $currentgroup,
-    pagecheck_user_fields_sql(), 'u.lastname, u.firstname');
+$participants = report::get_participants($context, (int) $pagecheck->id, (int) $currentgroup);
 
 $rows = report::build_rows($participants, $manager, $filter);
 
@@ -212,9 +211,15 @@ foreach ($pagerows as $row) {
         $gradecell = $row->grade === null ? '-' : format_float($row->grade, 2);
     }
 
+    $name = html_writer::link(new moodle_url('/user/view.php',
+        ['id' => $row->user->id, 'course' => $course->id]), fullname($row->user));
+    if (!empty($row->user->pagechecknotenrolled)) {
+        $name .= ' ' . html_writer::span(get_string('notenrolled', 'mod_pagecheck'),
+            'badge bg-warning text-dark');
+    }
+
     $table->data[] = [
-        html_writer::link(new moodle_url('/user/view.php',
-            ['id' => $row->user->id, 'course' => $course->id]), fullname($row->user)),
+        $name,
         get_string('status_' . $row->status, 'mod_pagecheck'),
         $row->pages === null ? '-' : $row->pages,
         $files ? implode(html_writer::empty_tag('br'), $files) : '-',

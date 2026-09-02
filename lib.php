@@ -465,22 +465,6 @@ function pagecheck_extend_settings_navigation($settings, $node) {
 }
 
 /**
- * The SELECT list for reading a participant, ready to hand to get_enrolled_users().
- *
- * \core_user\fields::get_sql() decides on its own whether to lead with a comma, and that choice
- * is what the caller passes in. Normalising it here means neither report page has to know the
- * convention, and gluing the id column on can never produce "u.idu.firstname" again.
- *
- * @return string
- */
-function pagecheck_user_fields_sql() {
-    $fields = \core_user\fields::for_name()->get_sql('u', false, '', '', false)->selects;
-    $fields = ltrim(trim($fields), ',');
-
-    return $fields === '' ? 'u.id' : 'u.id, ' . $fields;
-}
-
-/**
  * Remove user data when a course is reset.
  *
  * @param stdClass $data the reset form data

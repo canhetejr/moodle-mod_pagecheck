@@ -197,6 +197,7 @@ $string['errornotargets'] = 'There is nobody to create an override for.';
 $string['viewsubmissions'] = 'View submissions';
 $string['summarysubmitted'] = '{$a->submitted} of {$a->participants} participants have sent work for grading.';
 $string['nosubmissions'] = 'Nothing to show.';
+$string['notenrolled'] = 'Not enrolled';
 $string['noinstances'] = 'There are no page check activities in this course.';
 $string['savegrades'] = 'Save grades';
 $string['gradessaved'] = '{$a} grades saved.';

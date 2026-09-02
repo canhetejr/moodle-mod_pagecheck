@@ -71,7 +71,8 @@ if (has_capability('mod/pagecheck:viewallsubmissions', $context)) {
         ['pagecheckid' => $pagecheck->id]);
     echo $OUTPUT->box(get_string('summarysubmitted', 'mod_pagecheck', (object) [
         'submitted' => $submitted,
-        'participants' => count_enrolled_users($context, 'mod/pagecheck:submit'),
+        'participants' => count(\mod_pagecheck\local\report::get_participants($context,
+            (int) $pagecheck->id)),
     ]));
     echo $OUTPUT->single_button(
         new moodle_url('/mod/pagecheck/submissions.php', ['id' => $cm->id]),
