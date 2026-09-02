@@ -112,9 +112,10 @@ function pagecheck_update_instance($data, $mform = null) {
  * @return void
  */
 function pagecheck_prepare_instance_data($data) {
-    // Store extensions in a predictable shape so that comparing them is straightforward.
+    // Store extensions with their leading dot, which is the shape the filetypes form element
+    // reads back. Everything else goes through rules::parse_extensions(), which strips it again.
     $extensions = \mod_pagecheck\local\rules::parse_extensions($data->allowedextensions ?? '');
-    $data->allowedextensions = implode(',', $extensions);
+    $data->allowedextensions = $extensions ? '.' . implode(',.', $extensions) : '';
 
     // An empty maximum is stored as zero, which every check reads as "no limit".
     foreach (['minpages', 'maxpages', 'countcover', 'maxbytes', 'blankpagetolerance'] as $field) {

@@ -406,7 +406,6 @@ class submission_manager {
                     return '.' . $extension;
                 }, $rules->allowedextensions)
                 : '*',
-            'return_types' => FILE_INTERNAL,
         ];
     }
 

@@ -128,7 +128,6 @@ class pdf_counter implements counter_interface {
             return null;
         }
 
-        $pdf = null;
         try {
             $pdf = new \setasign\Fpdi\TcpdfFpdi();
             $pages = $pdf->setSourceFile($path);
@@ -136,14 +135,9 @@ class pdf_counter implements counter_interface {
         } catch (\Throwable $e) {
             return null;
         } finally {
-            if ($pdf !== null) {
-                // TCPDF holds the whole document in memory until it is closed.
-                try {
-                    $pdf->_destroy(true, true);
-                } catch (\Throwable $e) {
-                    $pdf = null;
-                }
-            }
+            // TCPDF holds the whole document in memory; dropping the last reference to it here
+            // means a batch of submissions does not accumulate one parsed PDF after another.
+            unset($pdf);
         }
     }
 

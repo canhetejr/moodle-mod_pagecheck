@@ -152,7 +152,11 @@ if ($groupmode != NOGROUPS) {
     groups_print_activity_menu($cm, $baseurl);
 }
 
-echo $OUTPUT->single_select(new moodle_url($baseurl), 'filter',
+// single_select turns every parameter of the URL into a hidden field, so the base URL has to
+// arrive without the one the select itself is named after.
+$selecturl = new moodle_url($baseurl);
+$selecturl->remove_params('filter');
+echo $OUTPUT->single_select($selecturl, 'filter',
     report::get_filter_options(), $filter, null, 'filterform');
 
 if (!$pagerows) {
