@@ -347,3 +347,4 @@ $string['maximumshort'] = 'máx {$a}';
 $string['ofmax'] = 'de {$a}';
 $string['checkspassed'] = 'Todas as verificações passaram';
 $string['gradedonshort'] = 'Avaliado em {$a}';
+$string['status_graded'] = 'Avaliado';

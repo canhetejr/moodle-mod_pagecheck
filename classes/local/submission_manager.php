@@ -52,6 +52,27 @@ class submission_manager {
     /** @var string Sent back to the student for another attempt. */
     const STATUS_REOPENED = 'reopened';
 
+    /** @var string Marked. Not a stored status: it is the step after being sent for grading. */
+    const STATE_GRADED = 'graded';
+
+    /**
+     * How far a submission has actually got.
+     *
+     * The stored status stops at "submitted", because grading lives in its own table, so asking
+     * the status alone leaves a marked submission looking like it is still waiting. Every screen
+     * asks this instead.
+     *
+     * @param \stdClass|null $submission the attempt, or null when there is none
+     * @param bool $graded whether the student has a grade or a comment
+     * @return string one of the STATUS_* constants, or STATE_GRADED
+     */
+    public static function furthest_state($submission, bool $graded): string {
+        if ($graded) {
+            return self::STATE_GRADED;
+        }
+        return $submission ? $submission->status : self::STATUS_NEW;
+    }
+
     /** @var \stdClass|\cm_info The course module. */
     protected $cm;
 

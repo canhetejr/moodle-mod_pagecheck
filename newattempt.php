@@ -65,6 +65,8 @@ $confirmurl = new moodle_url('/mod/pagecheck/newattempt.php', [
 ]);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($pagecheck->name));
+if (!$PAGE->activityheader->is_title_allowed()) {
+    echo $OUTPUT->heading(format_string($pagecheck->name));
+}
 echo $OUTPUT->confirm(get_string('confirmnewattempt', 'mod_pagecheck'), $confirmurl, $viewurl);
 echo $OUTPUT->footer();

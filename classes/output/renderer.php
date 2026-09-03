@@ -88,11 +88,11 @@ class renderer extends \plugin_renderer_base {
      */
     public function submission_status(submission_manager $manager, $submission, rules $rules,
             array $results, array $issues = [], bool $graded = false): string {
-        $status = $submission ? $submission->status : submission_manager::STATUS_NEW;
+        $state = submission_manager::furthest_state($submission, $graded);
 
         $context = [
-            'statuslabel' => get_string('status_' . $status, 'mod_pagecheck'),
-            'statusstate' => $this->status_state($status, $issues),
+            'statuslabel' => get_string('status_' . $state, 'mod_pagecheck'),
+            'statusstate' => $this->status_state($state, $issues),
             'timeline' => $this->timeline($submission, $graded),
             'allclear' => $submission && !$issues,
             'meter' => $this->meter($submission, $rules, $results, $issues),
@@ -150,7 +150,8 @@ class renderer extends \plugin_renderer_base {
         $status = $submission ? $submission->status : submission_manager::STATUS_NEW;
         $submitted = $submission && $submission->timesubmitted > 0;
 
-        // Which step the student is standing on right now.
+        // Which step the student is standing on right now, and whether anything is still ahead.
+        $complete = $graded;
         if ($graded) {
             $reached = 2;
         } else if ($submitted) {
@@ -161,7 +162,7 @@ class renderer extends \plugin_renderer_base {
 
         $steps = [];
         foreach (['draft', 'submitted', 'graded'] as $index => $key) {
-            if ($index < $reached) {
+            if ($complete || $index < $reached) {
                 $state = 'done';
                 $hint = get_string('stepdone', 'mod_pagecheck');
             } else if ($index === $reached) {
@@ -326,7 +327,10 @@ class renderer extends \plugin_renderer_base {
         if ($issues) {
             return self::STATE_WARN;
         }
-        return $status === submission_manager::STATUS_SUBMITTED ? self::STATE_OK : 'neutral';
+
+        $good = [submission_manager::STATUS_SUBMITTED, submission_manager::STATE_GRADED];
+
+        return in_array($status, $good, true) ? self::STATE_OK : 'neutral';
     }
 
     /**
@@ -395,16 +399,12 @@ class renderer extends \plugin_renderer_base {
         // above the middle of the bar saying what the limits are.
         $meter['ticks'] = [];
         if ($min > 0) {
-            $meter['ticks'][] = [
-                'percent' => (int) round(($min / $scale) * 100),
-                'label' => get_string('minimumshort', 'mod_pagecheck', $min),
-            ];
+            $meter['ticks'][] = $this->tick(($min / $scale) * 100,
+                get_string('minimumshort', 'mod_pagecheck', $min));
         }
         if ($max > 0) {
-            $meter['ticks'][] = [
-                'percent' => (int) round(($max / $scale) * 100),
-                'label' => get_string('maximumshort', 'mod_pagecheck', $max),
-            ];
+            $meter['ticks'][] = $this->tick(($max / $scale) * 100,
+                get_string('maximumshort', 'mod_pagecheck', $max));
         }
 
         if ($min > 0 && $pages < $min) {
@@ -423,6 +423,30 @@ class renderer extends \plugin_renderer_base {
         }
 
         return $meter;
+    }
+
+    /**
+     * One mark on the page ruler.
+     *
+     * A label centred on a mark sitting at either end of the bar hangs off it, so a mark close to
+     * an edge is told to line up with that edge instead.
+     *
+     * @param float $percent where the mark sits along the bar
+     * @param string $label what the mark says
+     * @return array
+     */
+    protected function tick(float $percent, string $label): array {
+        $percent = (int) round(max(0, min(100, $percent)));
+
+        if ($percent < 8) {
+            $align = 'start';
+        } else if ($percent > 92) {
+            $align = 'end';
+        } else {
+            $align = 'center';
+        }
+
+        return ['percent' => $percent, 'label' => $label, 'align' => $align];
     }
 
     /**

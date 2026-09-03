@@ -59,10 +59,11 @@ $manager = new submission_manager($cm, $pagecheck, $context);
 $renderer = $PAGE->get_renderer('mod_pagecheck');
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($pagecheck->name));
 
-if (!empty($pagecheck->intro)) {
-    echo $OUTPUT->box(format_module_intro('pagecheck', $pagecheck, $cm->id), 'generalbox', 'intro');
+// The activity header the theme draws already carries the name and the description; printing
+// them again here is what put the activity title on the page twice.
+if (!$PAGE->activityheader->is_title_allowed()) {
+    echo $OUTPUT->heading(format_string($pagecheck->name));
 }
 
 if (has_capability('mod/pagecheck:viewallsubmissions', $context)) {

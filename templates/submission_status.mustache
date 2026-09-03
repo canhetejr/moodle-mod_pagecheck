@@ -46,8 +46,8 @@
         "meter": {
             "show": true, "value": "7", "unit": "pages", "state": "ok",
             "hasrange": true, "rangetext": "Between 5 and 10", "caption": "Within the range.",
-            "percent": 70, "bandleft": 50, "bandwidth": 50, "scalemin": "0", "scalemax": "10",
-            "ticks": [{"percent": 50, "label": "min 5"}, {"percent": 100, "label": "max 10"}]
+            "percent": 70, "bandleft": 50, "bandwidth": 50, "ticks": [{"percent": 50, "label": "min 5", "align": "center"},
+                      {"percent": 100, "label": "max 10", "align": "end"}]
         },
         "facts": [{"label": "Due date", "value": "1 September 2026"}],
         "restrictions": [{"label": "Pages", "value": "Between 5 and 10"}],
@@ -66,7 +66,12 @@
     <div class="pagecheck-panel">
         <div class="pagecheck-panel__head">
             <h3 class="pagecheck-panel__title">{{#str}}submissionstatus, mod_pagecheck{{/str}}</h3>
-            <span class="pagecheck-pill pagecheck-pill--{{statusstate}}">{{statuslabel}}</span>
+            <span class="pagecheck-panel__badges">
+                {{#allclear}}
+                    <span class="pagecheck-chip pagecheck-chip--ok">{{#str}}checkspassed, mod_pagecheck{{/str}}</span>
+                {{/allclear}}
+                <span class="pagecheck-pill pagecheck-pill--{{statusstate}}">{{statuslabel}}</span>
+            </span>
         </div>
         <div class="pagecheck-panel__body">
             <ol class="pagecheck-steps" aria-label="{{#str}}timeline, mod_pagecheck{{/str}}">
@@ -97,12 +102,10 @@
                                     {{/ticks}}
                                 </div>
                                 <div class="pagecheck-gauge__scale">
-                                    <span>{{scalemin}}</span>
                                     {{#ticks}}
-                                        <span class="pagecheck-gauge__ticklabel"
+                                        <span class="pagecheck-gauge__ticklabel is-{{align}}"
                                               style="left: {{percent}}%;">{{label}}</span>
                                     {{/ticks}}
-                                    <span>{{scalemax}}</span>
                                 </div>
                             {{/hasrange}}
                             <p class="pagecheck-gauge__caption">{{caption}}</p>
@@ -111,12 +114,8 @@
                 {{/show}}
             {{/meter}}
 
-            {{#allclear}}
-                <p class="pagecheck-allclear">{{#str}}checkspassed, mod_pagecheck{{/str}}</p>
-            {{/allclear}}
-
             {{#hasfacts}}
-                <dl class="pagecheck-facts">
+                <dl class="pagecheck-facts pagecheck-facts--divided">
                     {{#facts}}
                         <dt>{{label}}</dt>
                         <dd>{{{value}}}</dd>

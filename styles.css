@@ -200,17 +200,43 @@
 
 .path-mod-pagecheck .pagecheck-gauge__ticklabel {
     position: absolute;
-    transform: translateX(-50%);
     white-space: nowrap;
+}
+
+.path-mod-pagecheck .pagecheck-gauge__ticklabel.is-center {
+    transform: translateX(-50%);
+}
+
+.path-mod-pagecheck .pagecheck-gauge__ticklabel.is-end {
+    transform: translateX(-100%);
+}
+
+/* The scale row holds only absolutely positioned labels, so it needs a height of its own. */
+.path-mod-pagecheck .pagecheck-gauge__scale {
+    min-height: 1.1rem;
 }
 
 /* Fact lists -------------------------------------------------------------- */
 
 .path-mod-pagecheck .pagecheck-facts {
     display: grid;
-    grid-template-columns: minmax(9rem, max-content) 1fr;
     gap: .35rem 1rem;
+    grid-template-columns: minmax(9rem, max-content) 1fr;
     margin: 0;
+}
+
+.path-mod-pagecheck .pagecheck-facts--divided {
+    border-top: 1px solid var(--pagecheck-border);
+    margin-top: 1rem;
+    padding-top: .9rem;
+}
+
+/* Two pairs side by side once the screen can hold them, which halves the height of the panels. */
+@media (min-width: 768px) {
+    .path-mod-pagecheck .pagecheck-facts {
+        grid-template-columns: minmax(8rem, max-content) 1fr minmax(8rem, max-content) 1fr;
+        column-gap: 1.5rem;
+    }
 }
 
 .path-mod-pagecheck .pagecheck-facts dt {
@@ -488,12 +514,6 @@
     to { opacity: 1; transform: none; }
 }
 
-.path-mod-pagecheck .pagecheck-allclear {
-    color: var(--pagecheck-ok);
-    font-size: .875rem;
-    margin: .25rem 0 0;
-}
-
 .path-mod-pagecheck .pagecheck-panel__meta {
     color: var(--pagecheck-muted);
     font-size: .8125rem;
@@ -558,4 +578,25 @@
 .path-mod-pagecheck .pagecheck-chip--ok {
     background: var(--pagecheck-ok-bg);
     color: var(--pagecheck-ok);
+}
+
+/* A report wider than the page scrolls on its own instead of pushing the page sideways. */
+.path-mod-pagecheck .pagecheck-tablewrap {
+    margin-bottom: 1rem;
+    overflow-x: auto;
+}
+
+.path-mod-pagecheck .pagecheck-tablewrap table {
+    margin-bottom: 0;
+}
+
+.path-mod-pagecheck .pagecheck-panel__badges {
+    align-items: center;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+
+.path-mod-pagecheck .pagecheck-panel__badges .pagecheck-chip {
+    margin: 0;
 }

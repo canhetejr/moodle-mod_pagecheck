@@ -149,7 +149,9 @@ $total = count($rows);
 $pagerows = array_slice($rows, $page * $perpage, $perpage);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($pagecheck->name));
+if (!$PAGE->activityheader->is_title_allowed()) {
+    echo $OUTPUT->heading(format_string($pagecheck->name));
+}
 
 if ($groupmode != NOGROUPS) {
     groups_print_activity_menu($cm, $baseurl);
@@ -236,12 +238,17 @@ foreach ($pagerows as $row) {
             'badge bg-warning text-dark');
     }
 
+    // The furthest step reached, so a marked submission does not still read "waiting", and two
+    // pills never stack up saying overlapping things.
+    $furthest = submission_manager::furthest_state($row->submission, $row->grade !== null);
+
     $state = 'neutral';
     if (issue::has_errors($row->issues)) {
         $state = 'error';
     } else if ($row->issues) {
         $state = 'warn';
-    } else if ($row->status === submission_manager::STATUS_SUBMITTED) {
+    } else if (in_array($furthest, [submission_manager::STATUS_SUBMITTED,
+            submission_manager::STATE_GRADED], true)) {
         $state = 'ok';
     }
 
@@ -259,12 +266,8 @@ foreach ($pagerows as $row) {
         $pagescell = html_writer::div($pagescell, 'pagecheck-mini');
     }
 
-    $statuscell = html_writer::span(get_string('status_' . $row->status, 'mod_pagecheck'),
+    $statuscell = html_writer::span(get_string('status_' . $furthest, 'mod_pagecheck'),
         'pagecheck-pill pagecheck-pill--' . $state);
-    if ($row->grade !== null) {
-        $statuscell .= ' ' . html_writer::span(get_string('graded', 'mod_pagecheck'),
-            'pagecheck-pill pagecheck-pill--ok');
-    }
 
     $table->data[] = [
         $name,
@@ -283,7 +286,7 @@ if ($quickgrade) {
     echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'savegrades', 'value' => 1]);
 }
 
-echo html_writer::table($table);
+echo html_writer::div(html_writer::table($table), 'pagecheck-tablewrap');
 echo $OUTPUT->paging_bar($total, $page, $perpage, $baseurl);
 
 if ($quickgrade) {

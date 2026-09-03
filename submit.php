@@ -74,7 +74,9 @@ if ($blocked) {
     $event->trigger();
 
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(format_string($pagecheck->name));
+    if (!$PAGE->activityheader->is_title_allowed()) {
+        echo $OUTPUT->heading(format_string($pagecheck->name));
+    }
     echo $OUTPUT->notification(get_string('submissionrefused', 'mod_pagecheck'),
         \core\output\notification::NOTIFY_ERROR);
     echo $renderer->issue_list($issues);
@@ -109,7 +111,9 @@ if ($confirm) {
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($pagecheck->name));
+if (!$PAGE->activityheader->is_title_allowed()) {
+    echo $OUTPUT->heading(format_string($pagecheck->name));
+}
 
 if ($issues) {
     // Nothing here blocks the submission, but the student should still see it before confirming.

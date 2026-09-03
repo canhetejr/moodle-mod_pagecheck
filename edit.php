@@ -101,6 +101,8 @@ $PAGE->requires->js_call_amd('mod_pagecheck/validator', 'init', [[
 ]]);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($pagecheck->name));
+if (!$PAGE->activityheader->is_title_allowed()) {
+    echo $OUTPUT->heading(format_string($pagecheck->name));
+}
 $form->display();
 echo $OUTPUT->footer();
