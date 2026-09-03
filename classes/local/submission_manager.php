@@ -273,7 +273,11 @@ class submission_manager {
             $seen[$hash] = true;
             $record = isset($byhash[$hash]) ? $byhash[$hash] : null;
 
+            // A null paper size means the row was written before this plugin knew how to read
+            // one, not that the format has none: that case is stored as an empty string. Such a
+            // row is recounted once, so an existing submission heals itself on the next visit.
             if (!$force && $record && $record->contenthash === $file->get_contenthash()
+                    && $record->pagesize !== null
                     && (!$analysetext || $record->hastext !== null)) {
                 $results[$hash] = $this->result_from_record($record);
                 continue;
@@ -311,7 +315,8 @@ class submission_manager {
         $result = new count_result();
         $result->pages = $record->pagecount === null ? null : (int) $record->pagecount;
         $result->method = $record->countmethod;
-        $result->pagesize = $record->pagesize;
+        $result->pagesize = ($record->pagesize === null || $record->pagesize === '')
+            ? null : $record->pagesize;
         $result->contenthash = (string) $record->contenthash;
         $result->encrypted = (bool) $record->encrypted;
         $result->hastext = $record->hastext === null ? null : (bool) $record->hastext;
@@ -350,7 +355,9 @@ class submission_manager {
             'filesize' => (int) $file->get_filesize(),
             'pagecount' => $result->pages,
             'countmethod' => $result->method,
-            'pagesize' => $result->pagesize,
+            // Empty means "looked at, and this format has no paper size"; null is reserved for
+            // rows an older version of the plugin wrote.
+            'pagesize' => $result->pagesize === null ? '' : $result->pagesize,
             'hastext' => $result->hastext === null ? null : (int) $result->hastext,
             'blankpages' => $result->blankpages,
             'encrypted' => (int) $result->encrypted,

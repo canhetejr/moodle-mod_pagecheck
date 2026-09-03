@@ -147,12 +147,19 @@
 }
 
 .path-mod-pagecheck .pagecheck-gauge__fill {
+    animation: pagecheck-grow .9s cubic-bezier(.22, .61, .36, 1) both;
+    background: var(--pagecheck-muted);
     border-radius: 999px;
     bottom: 0;
     left: 0;
     position: absolute;
     top: 0;
-    background: var(--pagecheck-muted);
+    width: var(--pagecheck-fill, 0);
+}
+
+@keyframes pagecheck-grow {
+    from { width: 0; }
+    to { width: var(--pagecheck-fill, 0); }
 }
 
 .path-mod-pagecheck .pagecheck-gauge--ok .pagecheck-gauge__fill {
@@ -178,7 +185,23 @@
     display: flex;
     font-size: .75rem;
     justify-content: space-between;
-    margin-bottom: .3rem;
+    margin-top: .35rem;
+    position: relative;
+}
+
+.path-mod-pagecheck .pagecheck-gauge__tick {
+    background: var(--pagecheck-ok);
+    bottom: -3px;
+    opacity: .75;
+    position: absolute;
+    top: -3px;
+    width: 2px;
+}
+
+.path-mod-pagecheck .pagecheck-gauge__ticklabel {
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
 }
 
 /* Fact lists -------------------------------------------------------------- */
@@ -354,4 +377,185 @@
 
 .path-mod-pagecheck .pagecheck-history {
     margin-bottom: 1.5rem;
+}
+
+/* The submission timeline -------------------------------------------------- */
+
+.path-mod-pagecheck .pagecheck-steps {
+    counter-reset: pagecheck-step;
+    display: flex;
+    gap: .25rem;
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+}
+
+.path-mod-pagecheck .pagecheck-step {
+    align-items: center;
+    display: flex;
+    flex: 1 1 0;
+    gap: .5rem;
+    min-width: 0;
+    position: relative;
+}
+
+/* The line joining one step to the next, drawn behind the markers. */
+.path-mod-pagecheck .pagecheck-step + .pagecheck-step::before {
+    background: var(--pagecheck-border);
+    content: "";
+    height: 2px;
+    left: -.25rem;
+    position: absolute;
+    right: calc(100% - .25rem);
+    top: .85rem;
+}
+
+.path-mod-pagecheck .pagecheck-step.is-done + .pagecheck-step::before,
+.path-mod-pagecheck .pagecheck-step.is-current + .pagecheck-step::before {
+    background: var(--pagecheck-ok);
+}
+
+.path-mod-pagecheck .pagecheck-step__marker {
+    align-items: center;
+    background: var(--pagecheck-neutral-bg);
+    border: 2px solid var(--pagecheck-border);
+    border-radius: 999px;
+    color: var(--pagecheck-muted);
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: .8125rem;
+    font-weight: 600;
+    height: 1.75rem;
+    justify-content: center;
+    width: 1.75rem;
+}
+
+.path-mod-pagecheck .pagecheck-step__label {
+    font-size: .875rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.path-mod-pagecheck .pagecheck-step.is-done .pagecheck-step__marker {
+    background: var(--pagecheck-ok);
+    border-color: var(--pagecheck-ok);
+    color: #fff;
+}
+
+.path-mod-pagecheck .pagecheck-step.is-current .pagecheck-step__marker {
+    animation: pagecheck-pulse 2.4s ease-in-out infinite;
+    background: #fff;
+    border-color: var(--pagecheck-ok);
+    color: var(--pagecheck-ok);
+}
+
+.path-mod-pagecheck .pagecheck-step.is-current .pagecheck-step__label {
+    font-weight: 600;
+}
+
+.path-mod-pagecheck .pagecheck-step.is-todo .pagecheck-step__label {
+    color: var(--pagecheck-muted);
+}
+
+@keyframes pagecheck-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(31, 122, 69, .35); }
+    50% { box-shadow: 0 0 0 .35rem rgba(31, 122, 69, 0); }
+}
+
+@media (max-width: 560px) {
+    .path-mod-pagecheck .pagecheck-steps {
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .path-mod-pagecheck .pagecheck-step + .pagecheck-step::before {
+        display: none;
+    }
+}
+
+/* The count, which rises into place with the bar. */
+.path-mod-pagecheck .pagecheck-count__value {
+    animation: pagecheck-rise .5s ease-out both;
+}
+
+.path-mod-pagecheck .pagecheck-count--grade .pagecheck-count__value {
+    font-size: 2.25rem;
+}
+
+@keyframes pagecheck-rise {
+    from { opacity: 0; transform: translateY(.4rem); }
+    to { opacity: 1; transform: none; }
+}
+
+.path-mod-pagecheck .pagecheck-allclear {
+    color: var(--pagecheck-ok);
+    font-size: .875rem;
+    margin: .25rem 0 0;
+}
+
+.path-mod-pagecheck .pagecheck-panel__meta {
+    color: var(--pagecheck-muted);
+    font-size: .8125rem;
+}
+
+/* Movement is a preference, not a decision this plugin gets to make for everyone. */
+@media (prefers-reduced-motion: reduce) {
+    .path-mod-pagecheck .pagecheck-gauge__fill,
+    .path-mod-pagecheck .pagecheck-count__value,
+    .path-mod-pagecheck .pagecheck-step.is-current .pagecheck-step__marker {
+        animation: none;
+    }
+
+    .path-mod-pagecheck .pagecheck-gauge__fill {
+        width: var(--pagecheck-fill, 0);
+    }
+}
+
+/* The submissions report -------------------------------------------------- */
+
+.path-mod-pagecheck .pagecheck-mini {
+    min-width: 4.5rem;
+}
+
+.path-mod-pagecheck .pagecheck-mini__value {
+    font-weight: 600;
+}
+
+.path-mod-pagecheck .pagecheck-mini__track {
+    background: var(--pagecheck-neutral-bg);
+    border-radius: 999px;
+    height: .3rem;
+    margin-top: .25rem;
+    overflow: hidden;
+}
+
+.path-mod-pagecheck .pagecheck-mini__fill {
+    background: var(--pagecheck-muted);
+    height: 100%;
+}
+
+.path-mod-pagecheck .pagecheck-chip {
+    background: var(--pagecheck-neutral-bg);
+    border-radius: .3rem;
+    display: inline-block;
+    font-size: .8125rem;
+    line-height: 1.35;
+    margin: 0 .2rem .2rem 0;
+    padding: .15rem .45rem;
+}
+
+.path-mod-pagecheck .pagecheck-chip--error {
+    background: var(--pagecheck-error-bg);
+    color: var(--pagecheck-error);
+}
+
+.path-mod-pagecheck .pagecheck-chip--warn {
+    background: var(--pagecheck-warn-bg);
+    color: var(--pagecheck-warn);
+}
+
+.path-mod-pagecheck .pagecheck-chip--ok {
+    background: var(--pagecheck-ok-bg);
+    color: var(--pagecheck-ok);
 }

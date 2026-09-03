@@ -148,8 +148,10 @@ echo $OUTPUT->heading(fullname($student));
 // Where this student sits in the class, and the way to their neighbours.
 echo $renderer->grading_navigation($cm, $neighbours, $filter, $page);
 
+$graded = $record && ($record->grade !== null || trim((string) $record->feedback) !== '');
+
 echo $renderer->issue_list($issues);
-echo $renderer->submission_status($manager, $submission, $rules, $results, $issues);
+echo $renderer->submission_status($manager, $submission, $rules, $results, $issues, $graded);
 echo $renderer->attempt_history($manager, $userid);
 
 echo $OUTPUT->heading(get_string('gradeheading', 'mod_pagecheck'), 3);

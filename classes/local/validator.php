@@ -63,15 +63,19 @@ class validator {
      *
      * @param count_result[] $results one result per submitted file
      * @param rules $rules the effective restrictions for this user
-     * @param array $context 'time' (defaults to now), 'attemptsused', 'statementaccepted'
+     * @param array $context 'time' (defaults to now), 'attemptsused', and 'forsubmission' when
+     *                        the answer decides whether work may be sent, rather than describing
+     *                        work that was already sent
      * @return issue[]
      */
     public function validate(array $results, rules $rules, array $context = []): array {
         $time = isset($context['time']) ? (int) $context['time'] : time();
         $attemptsused = isset($context['attemptsused']) ? (int) $context['attemptsused'] : 0;
+        $forsubmission = !empty($context['forsubmission']);
 
         $issues = [];
-        $issues = array_merge($issues, $this->check_timing($rules, $time, $attemptsused));
+        $issues = array_merge($issues,
+            $this->check_timing($rules, $time, $attemptsused, $forsubmission));
         $issues = array_merge($issues, $this->check_files($results, $rules));
         $issues = array_merge($issues, $this->check_total_pages($results, $rules));
 
@@ -92,9 +96,11 @@ class validator {
      * @param rules $rules the effective restrictions
      * @param int $time the moment the submission is being made
      * @param int $attemptsused how many attempts the user has already submitted
+     * @param bool $forsubmission whether this answer decides if work may be sent
      * @return issue[]
      */
-    protected function check_timing(rules $rules, int $time, int $attemptsused): array {
+    protected function check_timing(rules $rules, int $time, int $attemptsused,
+            bool $forsubmission = false): array {
         $issues = [];
 
         if ($rules->is_not_open_yet($time)) {
@@ -107,7 +113,10 @@ class validator {
             $issues[] = new issue('late', issue::LEVEL_WARNING, userdate($rules->duedate));
         }
 
-        if ($rules->maxattempts >= 0 && $attemptsused >= $rules->maxattempts) {
+        // Having used every attempt is only a problem for someone trying to send another one.
+        // Telling a student who already handed in that they are out of attempts turns a finished
+        // submission into a screenful of red for no reason.
+        if ($forsubmission && $rules->maxattempts >= 0 && $attemptsused >= $rules->maxattempts) {
             $issues[] = new issue('noattemptsleft', issue::LEVEL_ERROR, $rules->maxattempts);
         }
 

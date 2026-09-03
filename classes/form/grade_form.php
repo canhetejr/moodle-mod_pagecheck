@@ -54,7 +54,7 @@ class grade_form extends \moodleform {
         if ($grader->is_graded()) {
             if ($grader->uses_scale()) {
                 $menu = [-1 => get_string('notgraded', 'mod_pagecheck')] + $grader->get_grade_menu();
-                $mform->addElement('select', 'grade', get_string('grade'), $menu);
+                $mform->addElement('select', 'grade', get_string('gradelabel', 'mod_pagecheck'), $menu);
             } else {
                 // A menu of a hundred and one entries would be worse than a box for a grade out
                 // of a hundred, so points are typed.

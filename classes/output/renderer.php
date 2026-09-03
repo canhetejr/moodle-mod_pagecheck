@@ -83,15 +83,18 @@ class renderer extends \plugin_renderer_base {
      * @param rules $rules the effective restrictions for this user
      * @param count_result[] $results the counting results, keyed by path name hash
      * @param issue[] $issues the problems found, which decide the colour of the page count
+     * @param bool $graded whether this student already has a grade or a comment
      * @return string HTML
      */
     public function submission_status(submission_manager $manager, $submission, rules $rules,
-            array $results, array $issues = []): string {
+            array $results, array $issues = [], bool $graded = false): string {
         $status = $submission ? $submission->status : submission_manager::STATUS_NEW;
 
         $context = [
             'statuslabel' => get_string('status_' . $status, 'mod_pagecheck'),
             'statusstate' => $this->status_state($status, $issues),
+            'timeline' => $this->timeline($submission, $graded),
+            'allclear' => $submission && !$issues,
             'meter' => $this->meter($submission, $rules, $results, $issues),
             'facts' => $this->fact_rows($submission, $rules),
             'restrictions' => $this->restriction_rows($rules),
@@ -131,6 +134,53 @@ class renderer extends \plugin_renderer_base {
         }
 
         return $this->render_from_template('mod_pagecheck/submission_status', $context);
+    }
+
+    /**
+     * The three steps a submission goes through, and which one the student is on.
+     *
+     * A student wants to know where their work stands before they want any number, and a row of
+     * steps answers that at a glance in a way a status word on its own does not.
+     *
+     * @param \stdClass|null $submission the attempt, or null when there is none yet
+     * @param bool $graded whether the student already has a grade or a comment
+     * @return array the steps, each with a label and a state
+     */
+    protected function timeline($submission, bool $graded): array {
+        $status = $submission ? $submission->status : submission_manager::STATUS_NEW;
+        $submitted = $submission && $submission->timesubmitted > 0;
+
+        // Which step the student is standing on right now.
+        if ($graded) {
+            $reached = 2;
+        } else if ($submitted) {
+            $reached = 1;
+        } else {
+            $reached = $status === submission_manager::STATUS_NEW ? -1 : 0;
+        }
+
+        $steps = [];
+        foreach (['draft', 'submitted', 'graded'] as $index => $key) {
+            if ($index < $reached) {
+                $state = 'done';
+                $hint = get_string('stepdone', 'mod_pagecheck');
+            } else if ($index === $reached) {
+                $state = 'current';
+                $hint = get_string('stepcurrent', 'mod_pagecheck');
+            } else {
+                $state = 'todo';
+                $hint = get_string('steptodo', 'mod_pagecheck');
+            }
+
+            $steps[] = [
+                'label' => get_string('step_' . $key, 'mod_pagecheck'),
+                'state' => $state,
+                'hint' => $hint,
+                'number' => $index + 1,
+            ];
+        }
+
+        return $steps;
     }
 
     /**
@@ -222,18 +272,24 @@ class renderer extends \plugin_renderer_base {
             return '';
         }
 
-        $rows = [];
-        if ($grader->is_graded() && $record->grade !== null) {
-            $rows[] = [
-                'label' => get_string('grade'),
-                'value' => $grader->format_grade($record->grade),
-            ];
-        }
-        if ($record->timemodified) {
-            $rows[] = [
-                'label' => get_string('gradedon_short', 'mod_pagecheck'),
-                'value' => userdate($record->timemodified),
-            ];
+        $hasgrade = $grader->is_graded() && $record->grade !== null;
+
+        // A grade out of points is worth showing the way the page count is shown: the figure
+        // large, and how much of the maximum it is as a bar beside it.
+        $percent = null;
+        $value = '';
+        $unit = '';
+        if ($hasgrade) {
+            if ($grader->uses_scale()) {
+                $value = $grader->format_grade($record->grade);
+            } else {
+                $max = $grader->get_max_grade();
+                $value = format_float((float) $record->grade, 2);
+                $unit = get_string('ofmax', 'mod_pagecheck', format_float($max, 2));
+                $percent = $max > 0
+                    ? (int) round(min(100, max(0, ((float) $record->grade / $max) * 100)))
+                    : null;
+            }
         }
 
         $feedback = '';
@@ -243,7 +299,14 @@ class renderer extends \plugin_renderer_base {
         }
 
         return $this->render_from_template('mod_pagecheck/grade_panel', [
-            'rows' => $rows,
+            'hasgrade' => $hasgrade,
+            'value' => $value,
+            'unit' => $unit,
+            'hasbar' => $percent !== null,
+            'percent' => $percent,
+            'gradedon' => $record->timemodified
+                ? get_string('gradedonshort', 'mod_pagecheck', userdate($record->timemodified))
+                : '',
             'hasfeedback' => $feedback !== '',
             'feedback' => $feedback,
         ]);
@@ -328,13 +391,29 @@ class renderer extends \plugin_renderer_base {
         $meter['scalemax'] = (string) (int) ceil($scale);
         $meter['rangetext'] = $this->range_text($rules);
 
+        // Marks sitting at the real position of each limit, rather than a sentence floating
+        // above the middle of the bar saying what the limits are.
+        $meter['ticks'] = [];
+        if ($min > 0) {
+            $meter['ticks'][] = [
+                'percent' => (int) round(($min / $scale) * 100),
+                'label' => get_string('minimumshort', 'mod_pagecheck', $min),
+            ];
+        }
+        if ($max > 0) {
+            $meter['ticks'][] = [
+                'percent' => (int) round(($max / $scale) * 100),
+                'label' => get_string('maximumshort', 'mod_pagecheck', $max),
+            ];
+        }
+
         if ($min > 0 && $pages < $min) {
             $meter['state'] = self::STATE_ERROR;
             $meter['caption'] = get_string('metershort', 'mod_pagecheck', $min - $pages);
         } else if ($max > 0 && $pages > $max) {
             $meter['state'] = self::STATE_ERROR;
             $meter['caption'] = get_string('meterover', 'mod_pagecheck', $pages - $max);
-        } else if ($issues) {
+        } else if ($this->has_page_issues($issues)) {
             $meter['state'] = self::STATE_WARN;
         }
 
@@ -344,6 +423,27 @@ class renderer extends \plugin_renderer_base {
         }
 
         return $meter;
+    }
+
+    /**
+     * Whether any problem found is actually about the pages.
+     *
+     * A late submission or a file named wrongly says nothing about the length of the work, and
+     * painting the page meter amber for it tells the student the wrong thing.
+     *
+     * @param issue[] $issues the problems found
+     * @return bool
+     */
+    protected function has_page_issues(array $issues): bool {
+        $pagecodes = ['toofewpages', 'toomanypages', 'unknownpagecount', 'blankpages', 'badpagesize'];
+
+        foreach ($issues as $issue) {
+            if (in_array($issue->code, $pagecodes, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

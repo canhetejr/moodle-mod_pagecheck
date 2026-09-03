@@ -118,7 +118,7 @@ if ($download !== '') {
         'status' => get_string('submissionstatus', 'mod_pagecheck'),
         'pages' => get_string('totalpages', 'mod_pagecheck'),
         'issues' => get_string('issues', 'mod_pagecheck'),
-        'grade' => get_string('grade'),
+        'grade' => get_string('gradelabel', 'mod_pagecheck'),
     ];
 
     $records = [];
@@ -176,7 +176,7 @@ $table->head = [
     get_string('totalpages', 'mod_pagecheck'),
     get_string('submittedfiles', 'mod_pagecheck'),
     get_string('issues', 'mod_pagecheck'),
-    get_string('grade'),
+    get_string('gradelabel', 'mod_pagecheck'),
 ];
 $table->attributes['class'] = 'generaltable table';
 
@@ -199,7 +199,7 @@ foreach ($pagerows as $row) {
 
     $messages = [];
     foreach ($row->issues as $issue) {
-        $class = $issue->is_error() ? 'text-danger' : 'text-warning';
+        $class = 'pagecheck-chip pagecheck-chip--' . ($issue->is_error() ? 'error' : 'warn');
         $messages[] = html_writer::span($issue->get_full_message(), $class);
     }
 
@@ -245,13 +245,34 @@ foreach ($pagerows as $row) {
         $state = 'ok';
     }
 
+    if ($row->pages === null) {
+        $pagescell = '-';
+    } else {
+        $ceiling = max((int) $pagecheck->maxpages, (int) $row->pages, 1);
+        $pagescell = html_writer::span($row->pages, 'pagecheck-mini__value')
+            . html_writer::div(
+                html_writer::div('', 'pagecheck-mini__fill', [
+                    'style' => 'width: ' . (int) round(((int) $row->pages / $ceiling) * 100) . '%;',
+                ]),
+                'pagecheck-mini__track'
+            );
+        $pagescell = html_writer::div($pagescell, 'pagecheck-mini');
+    }
+
+    $statuscell = html_writer::span(get_string('status_' . $row->status, 'mod_pagecheck'),
+        'pagecheck-pill pagecheck-pill--' . $state);
+    if ($row->grade !== null) {
+        $statuscell .= ' ' . html_writer::span(get_string('graded', 'mod_pagecheck'),
+            'pagecheck-pill pagecheck-pill--ok');
+    }
+
     $table->data[] = [
         $name,
-        html_writer::span(get_string('status_' . $row->status, 'mod_pagecheck'),
-            'pagecheck-pill pagecheck-pill--' . $state),
-        $row->pages === null ? '-' : $row->pages,
+        $statuscell,
+        $pagescell,
         $files ? implode(html_writer::empty_tag('br'), $files) : '-',
-        $messages ? implode(html_writer::empty_tag('br'), $messages) : '-',
+        $messages ? implode(' ', $messages) : html_writer::span(
+            get_string('checkspassed', 'mod_pagecheck'), 'pagecheck-chip pagecheck-chip--ok'),
         $gradecell,
     ];
 }

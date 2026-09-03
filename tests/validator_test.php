@@ -482,6 +482,31 @@ class validator_test extends \advanced_testcase {
     }
 
     /**
+     * The attempt allowance is only raised against someone trying to send work.
+     *
+     * A student who has handed in and been marked opened their activity page and was told, in
+     * red, that they had used all their attempts. Nothing was wrong; the check was answering a
+     * question that screen never asked.
+     *
+     * @return void
+     */
+    public function test_attempts_are_only_checked_for_a_submission(): void {
+        $validator = new validator();
+        $file = [$this->file('report.pdf', 7)];
+        $rules = $this->rules(['maxattempts' => 1]);
+
+        $looking = $validator->validate($file, $rules, ['attemptsused' => 1]);
+        $sending = $validator->validate($file, $rules,
+            ['attemptsused' => 1, 'forsubmission' => true]);
+        $sparelef = $validator->validate($file, $rules,
+            ['attemptsused' => 0, 'forsubmission' => true]);
+
+        $this->assertSame([], $this->codes($looking));
+        $this->assertSame(['noattemptsleft'], $this->codes($sending));
+        $this->assertSame([], $this->codes($sparelef));
+    }
+
+    /**
      * The extension list is read the same way whichever shape the teacher typed it in.
      *
      * @return void

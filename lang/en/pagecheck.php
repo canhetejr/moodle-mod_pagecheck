@@ -169,7 +169,7 @@ $string['issue_blankpages'] = '{$a->count} blank pages were found, and {$a->tole
 $string['issue_late'] = 'this submission is late. The due date was {$a}.';
 $string['issue_notopenyet'] = 'this activity does not accept submissions until {$a}.';
 $string['issue_submissionsclosed'] = 'this activity stopped accepting submissions on {$a}.';
-$string['issue_noattemptsleft'] = 'you have used all {$a} attempts.';
+$string['issue_noattemptsleft'] = 'you have already used every attempt allowed ({$a}).';
 
 // Errors raised while reading a file.
 $string['errorfileunreadable'] = 'the file could not be opened';
@@ -332,3 +332,18 @@ $string['nextstudent'] = 'Next student';
 $string['previousstudent'] = 'Previous student';
 $string['errorgradeoutofrange'] = 'The grade has to be a number between 0 and {$a}.';
 $string['errorgradeinvalid'] = 'That is not one of the grades this activity offers.';
+
+// The screens.
+$string['gradelabel'] = 'Grade';
+$string['timeline'] = 'Progress';
+$string['step_draft'] = 'Draft';
+$string['step_submitted'] = 'Submitted';
+$string['step_graded'] = 'Graded';
+$string['stepdone'] = 'done';
+$string['stepcurrent'] = 'current step';
+$string['steptodo'] = 'still to come';
+$string['minimumshort'] = 'min {$a}';
+$string['maximumshort'] = 'max {$a}';
+$string['ofmax'] = 'of {$a}';
+$string['checkspassed'] = 'All checks passed';
+$string['gradedonshort'] = 'Graded on {$a}';

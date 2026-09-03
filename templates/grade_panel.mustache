@@ -19,16 +19,24 @@
 
     The grade and the teacher's comment, as the student reads them on the activity page.
 
-    Shown only once there is something to show, so a student waiting to be marked sees nothing
-    here rather than an empty box promising a grade.
+    The grade is shown the way the page count is: the figure large, and how much of the maximum it
+    is as a bar beside it. Shown only once there is something to show, so a student waiting to be
+    marked sees nothing here rather than an empty box promising a grade.
 
     Context variables required for this template:
-    * rows - the grade and when it was given
+    * hasgrade, value, unit - the grade and what it is out of
+    * hasbar, percent - the proportion of the maximum, for a grade out of points
+    * gradedon - when it was awarded
     * hasfeedback, feedback - the comment written for the student, already formatted
 
     Example context (json):
     {
-        "rows": [{"label": "Grade", "value": "8.50 / 10.00"}],
+        "hasgrade": true,
+        "value": "8,50",
+        "unit": "of 10,00",
+        "hasbar": true,
+        "percent": 85,
+        "gradedon": "Graded on 3 September 2026",
         "hasfeedback": true,
         "feedback": "<p>Well argued, but the conclusion needs more of your own reading.</p>"
     }
@@ -36,14 +44,24 @@
 <div class="pagecheck-panel">
     <div class="pagecheck-panel__head">
         <h3 class="pagecheck-panel__title">{{#str}}gradeheading, mod_pagecheck{{/str}}</h3>
+        <span class="pagecheck-panel__meta">{{gradedon}}</span>
     </div>
     <div class="pagecheck-panel__body">
-        <dl class="pagecheck-facts">
-            {{#rows}}
-                <dt>{{label}}</dt>
-                <dd>{{value}}</dd>
-            {{/rows}}
-        </dl>
+        {{#hasgrade}}
+            <div class="pagecheck-hero">
+                <div class="pagecheck-count pagecheck-count--grade">
+                    <span class="pagecheck-count__value">{{value}}</span>
+                    <span class="pagecheck-count__label">{{unit}}</span>
+                </div>
+                {{#hasbar}}
+                    <div class="pagecheck-gauge pagecheck-gauge--grade">
+                        <div class="pagecheck-gauge__track">
+                            <div class="pagecheck-gauge__fill" style="--pagecheck-fill: {{percent}}%;"></div>
+                        </div>
+                    </div>
+                {{/hasbar}}
+            </div>
+        {{/hasgrade}}
         {{#hasfeedback}}
             <div class="pagecheck-feedback">{{{feedback}}}</div>
         {{/hasfeedback}}

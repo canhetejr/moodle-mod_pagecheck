@@ -55,7 +55,7 @@ if ($submission->status === submission_manager::STATUS_SUBMITTED) {
 // This is the check that counts. Whatever the browser decided, and whatever the student may have
 // changed in between, the files are counted again here before the attempt is accepted.
 $rules = $manager->get_rules($USER->id);
-$issues = $manager->validate($USER->id, $submission);
+$issues = $manager->validate($USER->id, $submission, ['forsubmission' => true]);
 $blocked = issue::has_errors($issues) && !has_capability('mod/pagecheck:submitwithissues', $context);
 
 $PAGE->set_url('/mod/pagecheck/submit.php', ['id' => $cm->id]);

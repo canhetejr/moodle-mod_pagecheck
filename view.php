@@ -89,11 +89,14 @@ if (has_capability('mod/pagecheck:submit', $context)) {
 
     $issues = $submission ? $manager->validate($USER->id, $submission) : [];
 
-    echo $renderer->issue_list($issues);
-    echo $renderer->submission_status($manager, $submission, $rules, $results, $issues);
-
     $grader = new grader($pagecheck, $context);
-    echo $renderer->grade_panel($grader, $grader->get_grade($USER->id), $context);
+    $graderecord = $grader->get_grade($USER->id);
+    $graded = $graderecord
+        && ($graderecord->grade !== null || trim((string) $graderecord->feedback) !== '');
+
+    echo $renderer->issue_list($issues);
+    echo $renderer->submission_status($manager, $submission, $rules, $results, $issues, $graded);
+    echo $renderer->grade_panel($grader, $graderecord, $context);
 
     $canedit = $manager->can_edit($USER->id, $submission);
     $hasfiles = $submission && $manager->get_files($submission);

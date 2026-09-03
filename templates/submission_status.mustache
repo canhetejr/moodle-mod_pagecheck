@@ -25,6 +25,8 @@
 
     Context variables required for this template:
     * statuslabel, statusstate - the state of the attempt and which pill to draw
+    * timeline - the three steps a submission goes through, and where the student is
+    * allclear - whether there is a submission with nothing wrong with it
     * meter - the page count against the required range
     * facts - dates and other rows about the attempt
     * restrictions - the rules in force for this student
@@ -35,10 +37,17 @@
     {
         "statuslabel": "Submitted for grading",
         "statusstate": "ok",
+        "allclear": true,
+        "timeline": [
+            {"label": "Draft", "state": "done", "hint": "done", "number": 1},
+            {"label": "Submitted", "state": "current", "hint": "current step", "number": 2},
+            {"label": "Graded", "state": "todo", "hint": "still to come", "number": 3}
+        ],
         "meter": {
             "show": true, "value": "7", "unit": "pages", "state": "ok",
             "hasrange": true, "rangetext": "Between 5 and 10", "caption": "Within the range.",
-            "percent": 70, "bandleft": 50, "bandwidth": 50, "scalemin": "0", "scalemax": "10"
+            "percent": 70, "bandleft": 50, "bandwidth": 50, "scalemin": "0", "scalemax": "10",
+            "ticks": [{"percent": 50, "label": "min 5"}, {"percent": 100, "label": "max 10"}]
         },
         "facts": [{"label": "Due date", "value": "1 September 2026"}],
         "restrictions": [{"label": "Pages", "value": "Between 5 and 10"}],
@@ -60,6 +69,16 @@
             <span class="pagecheck-pill pagecheck-pill--{{statusstate}}">{{statuslabel}}</span>
         </div>
         <div class="pagecheck-panel__body">
+            <ol class="pagecheck-steps" aria-label="{{#str}}timeline, mod_pagecheck{{/str}}">
+                {{#timeline}}
+                    <li class="pagecheck-step is-{{state}}">
+                        <span class="pagecheck-step__marker" aria-hidden="true">{{number}}</span>
+                        <span class="pagecheck-step__label">{{label}}</span>
+                        <span class="sr-only">{{hint}}</span>
+                    </li>
+                {{/timeline}}
+            </ol>
+
             {{#meter}}
                 {{#show}}
                     <div class="pagecheck-hero">
@@ -69,15 +88,21 @@
                         </div>
                         <div class="pagecheck-gauge pagecheck-gauge--{{state}}">
                             {{#hasrange}}
-                                <div class="pagecheck-gauge__scale">
-                                    <span>{{scalemin}}</span>
-                                    <span>{{rangetext}}</span>
-                                    <span>{{scalemax}}</span>
-                                </div>
                                 <div class="pagecheck-gauge__track">
                                     <div class="pagecheck-gauge__band"
                                          style="left: {{bandleft}}%; width: {{bandwidth}}%;"></div>
-                                    <div class="pagecheck-gauge__fill" style="width: {{percent}}%;"></div>
+                                    <div class="pagecheck-gauge__fill" style="--pagecheck-fill: {{percent}}%;"></div>
+                                    {{#ticks}}
+                                        <span class="pagecheck-gauge__tick" style="left: {{percent}}%;"></span>
+                                    {{/ticks}}
+                                </div>
+                                <div class="pagecheck-gauge__scale">
+                                    <span>{{scalemin}}</span>
+                                    {{#ticks}}
+                                        <span class="pagecheck-gauge__ticklabel"
+                                              style="left: {{percent}}%;">{{label}}</span>
+                                    {{/ticks}}
+                                    <span>{{scalemax}}</span>
                                 </div>
                             {{/hasrange}}
                             <p class="pagecheck-gauge__caption">{{caption}}</p>
@@ -85,6 +110,10 @@
                     </div>
                 {{/show}}
             {{/meter}}
+
+            {{#allclear}}
+                <p class="pagecheck-allclear">{{#str}}checkspassed, mod_pagecheck{{/str}}</p>
+            {{/allclear}}
 
             {{#hasfacts}}
                 <dl class="pagecheck-facts">

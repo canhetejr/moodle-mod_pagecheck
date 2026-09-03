@@ -169,7 +169,7 @@ $string['issue_blankpages'] = 'foram encontradas {$a->count} páginas em branco,
 $string['issue_late'] = 'este envio está atrasado. A data de entrega era {$a}.';
 $string['issue_notopenyet'] = 'esta atividade só aceita envios a partir de {$a}.';
 $string['issue_submissionsclosed'] = 'esta atividade parou de aceitar envios em {$a}.';
-$string['issue_noattemptsleft'] = 'você usou todas as {$a} tentativas.';
+$string['issue_noattemptsleft'] = 'você já usou todas as tentativas permitidas ({$a}).';
 
 // Errors raised while reading a file.
 $string['errorfileunreadable'] = 'não foi possível abrir o arquivo';
@@ -332,3 +332,18 @@ $string['nextstudent'] = 'Próximo aluno';
 $string['previousstudent'] = 'Aluno anterior';
 $string['errorgradeoutofrange'] = 'A nota precisa ser um número entre 0 e {$a}.';
 $string['errorgradeinvalid'] = 'Essa não é uma das notas que esta atividade oferece.';
+
+// The screens.
+$string['gradelabel'] = 'Nota';
+$string['timeline'] = 'Andamento';
+$string['step_draft'] = 'Rascunho';
+$string['step_submitted'] = 'Enviado';
+$string['step_graded'] = 'Avaliado';
+$string['stepdone'] = 'concluído';
+$string['stepcurrent'] = 'etapa atual';
+$string['steptodo'] = 'ainda por vir';
+$string['minimumshort'] = 'mín {$a}';
+$string['maximumshort'] = 'máx {$a}';
+$string['ofmax'] = 'de {$a}';
+$string['checkspassed'] = 'Todas as verificações passaram';
+$string['gradedonshort'] = 'Avaliado em {$a}';
