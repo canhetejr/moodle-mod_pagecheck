@@ -31,7 +31,7 @@ use mod_pagecheck\local\submission_manager;
 
 $id = required_param('id', PARAM_INT);
 
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'pagecheck');
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'pagecheck');
 $pagecheck = $DB->get_record('pagecheck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -68,13 +68,17 @@ if (!$PAGE->activityheader->is_title_allowed()) {
 
 if (has_capability('mod/pagecheck:viewallsubmissions', $context)) {
     // Teacher view: a summary and the way into the submissions report.
-    $submitted = $DB->count_records_select('pagecheck_submissions',
+    $submitted = $DB->count_records_select(
+        'pagecheck_submissions',
         'pagecheckid = :pagecheckid AND latest = 1 AND timesubmitted > 0',
-        ['pagecheckid' => $pagecheck->id]);
+        ['pagecheckid' => $pagecheck->id]
+    );
     echo $OUTPUT->box(get_string('summarysubmitted', 'mod_pagecheck', (object) [
         'submitted' => $submitted,
-        'participants' => count(\mod_pagecheck\local\report::get_participants($context,
-            (int) $pagecheck->id)),
+        'participants' => count(\mod_pagecheck\local\report::get_participants(
+            $context,
+            (int) $pagecheck->id
+        )),
     ]));
     echo $OUTPUT->single_button(
         new moodle_url('/mod/pagecheck/submissions.php', ['id' => $cm->id]),
@@ -113,8 +117,10 @@ if (has_capability('mod/pagecheck:submit', $context)) {
     }
 
     $blocked = issue::has_errors($issues) && !has_capability('mod/pagecheck:submitwithissues', $context);
-    if ($canedit && $hasfiles && !$blocked
-            && $submission->status !== submission_manager::STATUS_SUBMITTED) {
+    if (
+        $canedit && $hasfiles && !$blocked
+            && $submission->status !== submission_manager::STATUS_SUBMITTED
+    ) {
         echo $OUTPUT->single_button(
             new moodle_url('/mod/pagecheck/submit.php', ['id' => $cm->id]),
             get_string('submitforgrading', 'mod_pagecheck'),
@@ -125,8 +131,10 @@ if (has_capability('mod/pagecheck:submit', $context)) {
     echo html_writer::end_div();
 
     if (!$canedit && $submission && $submission->status === submission_manager::STATUS_SUBMITTED) {
-        echo $OUTPUT->notification(get_string('alreadysubmitted', 'mod_pagecheck'),
-            \core\output\notification::NOTIFY_INFO);
+        echo $OUTPUT->notification(
+            get_string('alreadysubmitted', 'mod_pagecheck'),
+            \core\output\notification::NOTIFY_INFO
+        );
 
         if ($manager->can_start_new_attempt($USER->id, $submission)) {
             echo $OUTPUT->single_button(

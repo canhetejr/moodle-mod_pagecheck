@@ -26,15 +26,12 @@ namespace mod_pagecheck;
 
 use mod_pagecheck\local\grader;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Tests for grading.
  *
  * @covers \mod_pagecheck\local\grader
  */
 class grader_test extends \advanced_testcase {
-
     /** @var \stdClass The course the activity lives in. */
     protected $course;
 
@@ -73,7 +70,7 @@ class grader_test extends \advanced_testcase {
     public function test_saving_a_grade(): void {
         global $DB;
 
-        list($grader, $module) = $this->make_activity(10);
+        [$grader, $module] = $this->make_activity(10);
         $student = $this->getDataGenerator()->create_and_enrol($this->course, 'student');
         $teacher = $this->getDataGenerator()->create_and_enrol($this->course, 'editingteacher');
 
@@ -95,7 +92,7 @@ class grader_test extends \advanced_testcase {
     public function test_regrading_replaces_the_grade(): void {
         global $DB;
 
-        list($grader, $module) = $this->make_activity(10);
+        [$grader, $module] = $this->make_activity(10);
         $student = $this->getDataGenerator()->create_and_enrol($this->course, 'student');
         $teacher = $this->getDataGenerator()->create_and_enrol($this->course, 'editingteacher');
 
@@ -119,7 +116,7 @@ class grader_test extends \advanced_testcase {
 
         require_once($CFG->libdir . '/gradelib.php');
 
-        list($grader, $module) = $this->make_activity(10);
+        [$grader, $module] = $this->make_activity(10);
         $student = $this->getDataGenerator()->create_and_enrol($this->course, 'student');
         $teacher = $this->getDataGenerator()->create_and_enrol($this->course, 'editingteacher');
 
@@ -137,7 +134,7 @@ class grader_test extends \advanced_testcase {
      * @return void
      */
     public function test_clearing_a_grade(): void {
-        list($grader) = $this->make_activity(10);
+        [$grader] = $this->make_activity(10);
         $student = $this->getDataGenerator()->create_and_enrol($this->course, 'student');
         $teacher = $this->getDataGenerator()->create_and_enrol($this->course, 'editingteacher');
 
@@ -156,7 +153,7 @@ class grader_test extends \advanced_testcase {
      * @return void
      */
     public function test_formatting_a_point_grade(): void {
-        list($grader) = $this->make_activity(10);
+        [$grader] = $this->make_activity(10);
 
         $this->assertStringContainsString('8', $grader->format_grade(8.0));
         $this->assertStringContainsString('10', $grader->format_grade(8.0));
@@ -173,7 +170,7 @@ class grader_test extends \advanced_testcase {
         $scale = $this->getDataGenerator()->create_scale([
             'scale' => 'Insufficient, Fair, Good, Excellent',
         ]);
-        list($grader) = $this->make_activity(-$scale->id);
+        [$grader] = $this->make_activity(-$scale->id);
 
         $this->assertTrue($grader->uses_scale());
         $this->assertSame('Good', $grader->format_grade(3));
@@ -186,7 +183,7 @@ class grader_test extends \advanced_testcase {
      * @return void
      */
     public function test_parsing_a_grade(): void {
-        list($grader) = $this->make_activity(10);
+        [$grader] = $this->make_activity(10);
 
         $this->assertSame([true, null], $grader->parse_grade(''));
         $this->assertSame([true, 7.5], $grader->parse_grade('7.5'));
@@ -204,7 +201,7 @@ class grader_test extends \advanced_testcase {
         $scale = $this->getDataGenerator()->create_scale([
             'scale' => 'Insufficient, Fair, Good, Excellent',
         ]);
-        list($grader) = $this->make_activity(-$scale->id);
+        [$grader] = $this->make_activity(-$scale->id);
 
         $this->assertSame([true, 4.0], $grader->parse_grade('4'));
         $this->assertSame([false, null], $grader->parse_grade('9'));

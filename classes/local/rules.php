@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Resolves the instance settings against the group and user overrides.
  *
@@ -35,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * touching its page limits.
  */
 class rules {
-
     /** @var string Accept a file whose page count could not be determined. */
     const UNKNOWN_ACCEPT = 'accept';
 

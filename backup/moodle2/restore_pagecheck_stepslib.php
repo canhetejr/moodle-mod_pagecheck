@@ -22,13 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Reads back what backup_pagecheck_activity_structure_step wrote.
  */
 class restore_pagecheck_activity_structure_step extends restore_activity_structure_step {
-
     /**
      * The elements this step knows how to restore.
      *
@@ -39,16 +36,24 @@ class restore_pagecheck_activity_structure_step extends restore_activity_structu
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('pagecheck', '/activity/pagecheck');
-        $paths[] = new restore_path_element('pagecheck_override',
-            '/activity/pagecheck/overrides/override');
+        $paths[] = new restore_path_element(
+            'pagecheck_override',
+            '/activity/pagecheck/overrides/override'
+        );
 
         if ($userinfo) {
-            $paths[] = new restore_path_element('pagecheck_submission',
-                '/activity/pagecheck/submissions/submission');
-            $paths[] = new restore_path_element('pagecheck_countedfile',
-                '/activity/pagecheck/submissions/submission/countedfiles/countedfile');
-            $paths[] = new restore_path_element('pagecheck_grade',
-                '/activity/pagecheck/grades/grade');
+            $paths[] = new restore_path_element(
+                'pagecheck_submission',
+                '/activity/pagecheck/submissions/submission'
+            );
+            $paths[] = new restore_path_element(
+                'pagecheck_countedfile',
+                '/activity/pagecheck/submissions/submission/countedfiles/countedfile'
+            );
+            $paths[] = new restore_path_element(
+                'pagecheck_grade',
+                '/activity/pagecheck/grades/grade'
+            );
         }
 
         return $this->prepare_activity_structure($paths);
@@ -174,7 +179,10 @@ class restore_pagecheck_activity_structure_step extends restore_activity_structu
      */
     protected function after_execute() {
         $this->add_related_files('mod_pagecheck', 'intro', null);
-        $this->add_related_files('mod_pagecheck',
-            \mod_pagecheck\local\submission_manager::FILEAREA, 'pagecheck_submission');
+        $this->add_related_files(
+            'mod_pagecheck',
+            \mod_pagecheck\local\submission_manager::FILEAREA,
+            'pagecheck_submission'
+        );
     }
 }

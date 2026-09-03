@@ -24,13 +24,10 @@
 
 namespace mod_pagecheck\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Fired when a student saves files for the first time in an attempt.
  */
 class submission_created extends \core\event\base {
-
     /**
      * Describe the event.
      *

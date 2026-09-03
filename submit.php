@@ -31,7 +31,7 @@ use mod_pagecheck\local\submission_manager;
 $id = required_param('id', PARAM_INT);
 $confirm = optional_param('confirm', 0, PARAM_BOOL);
 
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'pagecheck');
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'pagecheck');
 $pagecheck = $DB->get_record('pagecheck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -44,12 +44,20 @@ $viewurl = new moodle_url('/mod/pagecheck/view.php', ['id' => $cm->id]);
 
 $submission = $manager->get_submission($USER->id);
 if (!$submission || !$manager->get_files($submission)) {
-    redirect($viewurl, get_string('errornothingtosubmit', 'mod_pagecheck'), null,
-        \core\output\notification::NOTIFY_ERROR);
+    redirect(
+        $viewurl,
+        get_string('errornothingtosubmit', 'mod_pagecheck'),
+        null,
+        \core\output\notification::NOTIFY_ERROR
+    );
 }
 if ($submission->status === submission_manager::STATUS_SUBMITTED) {
-    redirect($viewurl, get_string('alreadysubmitted', 'mod_pagecheck'), null,
-        \core\output\notification::NOTIFY_INFO);
+    redirect(
+        $viewurl,
+        get_string('alreadysubmitted', 'mod_pagecheck'),
+        null,
+        \core\output\notification::NOTIFY_INFO
+    );
 }
 
 // This is the check that counts. Whatever the browser decided, and whatever the student may have
@@ -67,7 +75,7 @@ if ($blocked) {
     $event = \mod_pagecheck\event\submission_rejected::create([
         'objectid' => $submission->id,
         'context' => $context,
-        'other' => ['issues' => array_map(function(issue $issue) {
+        'other' => ['issues' => array_map(function (issue $issue) {
             return $issue->code;
         }, $issues)],
     ]);
@@ -77,8 +85,10 @@ if ($blocked) {
     if (!$PAGE->activityheader->is_title_allowed()) {
         echo $OUTPUT->heading(format_string($pagecheck->name));
     }
-    echo $OUTPUT->notification(get_string('submissionrefused', 'mod_pagecheck'),
-        \core\output\notification::NOTIFY_ERROR);
+    echo $OUTPUT->notification(
+        get_string('submissionrefused', 'mod_pagecheck'),
+        \core\output\notification::NOTIFY_ERROR
+    );
     echo $renderer->issue_list($issues);
     echo $OUTPUT->single_button(
         new moodle_url('/mod/pagecheck/edit.php', ['id' => $cm->id]),
@@ -106,8 +116,12 @@ if ($confirm) {
         $completion->update_state($cm, COMPLETION_COMPLETE, $USER->id);
     }
 
-    redirect($viewurl, get_string('submissionsent', 'mod_pagecheck'), null,
-        \core\output\notification::NOTIFY_SUCCESS);
+    redirect(
+        $viewurl,
+        get_string('submissionsent', 'mod_pagecheck'),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 
 echo $OUTPUT->header();
@@ -120,8 +134,13 @@ if ($issues) {
     echo $renderer->issue_list($issues);
 }
 
-echo $renderer->submission_status($manager, $submission, $rules,
-    $manager->analyse($submission, $rules), $issues);
+echo $renderer->submission_status(
+    $manager,
+    $submission,
+    $rules,
+    $manager->analyse($submission, $rules),
+    $issues
+);
 
 $confirmurl = new moodle_url('/mod/pagecheck/submit.php', [
     'id' => $cm->id,

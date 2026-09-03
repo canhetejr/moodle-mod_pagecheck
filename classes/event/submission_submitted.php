@@ -24,13 +24,10 @@
 
 namespace mod_pagecheck\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Fired when a student sends an attempt for grading.
  */
 class submission_submitted extends \core\event\base {
-
     /**
      * Describe the event.
      *

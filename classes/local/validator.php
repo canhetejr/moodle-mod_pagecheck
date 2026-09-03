@@ -27,8 +27,6 @@ namespace mod_pagecheck\local;
 use mod_pagecheck\counter\count_result;
 use mod_pagecheck\counter\page_size;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The single place where "is this submission acceptable" is decided.
  *
@@ -38,7 +36,6 @@ defined('MOODLE_INTERNAL') || die();
  * without this validator having run on the server.
  */
 class validator {
-
     /**
      * Issues that the "warn only" strictness downgrades to warnings.
      *
@@ -74,8 +71,10 @@ class validator {
         $forsubmission = !empty($context['forsubmission']);
 
         $issues = [];
-        $issues = array_merge($issues,
-            $this->check_timing($rules, $time, $attemptsused, $forsubmission));
+        $issues = array_merge(
+            $issues,
+            $this->check_timing($rules, $time, $attemptsused, $forsubmission)
+        );
         $issues = array_merge($issues, $this->check_files($results, $rules));
         $issues = array_merge($issues, $this->check_total_pages($results, $rules));
 
@@ -99,16 +98,26 @@ class validator {
      * @param bool $forsubmission whether this answer decides if work may be sent
      * @return issue[]
      */
-    protected function check_timing(rules $rules, int $time, int $attemptsused,
-            bool $forsubmission = false): array {
+    protected function check_timing(
+        rules $rules,
+        int $time,
+        int $attemptsused,
+        bool $forsubmission = false
+    ): array {
         $issues = [];
 
         if ($rules->is_not_open_yet($time)) {
-            $issues[] = new issue('notopenyet', issue::LEVEL_ERROR,
-                userdate($rules->allowsubmissionsfromdate));
+            $issues[] = new issue(
+                'notopenyet',
+                issue::LEVEL_ERROR,
+                userdate($rules->allowsubmissionsfromdate)
+            );
         } else if ($rules->is_closed($time)) {
-            $issues[] = new issue('submissionsclosed', issue::LEVEL_ERROR,
-                userdate($rules->cutoffdate > 0 ? $rules->cutoffdate : $rules->duedate));
+            $issues[] = new issue(
+                'submissionsclosed',
+                issue::LEVEL_ERROR,
+                userdate($rules->cutoffdate > 0 ? $rules->cutoffdate : $rules->duedate)
+            );
         } else if ($rules->is_late($time)) {
             $issues[] = new issue('late', issue::LEVEL_WARNING, userdate($rules->duedate));
         }
@@ -180,8 +189,12 @@ class validator {
             }
 
             if ($result->error !== null && $result->error !== 'errorencrypted') {
-                $issues[] = new issue('unreadable', issue::LEVEL_ERROR,
-                    get_string($result->error, 'mod_pagecheck'), $filename);
+                $issues[] = new issue(
+                    'unreadable',
+                    issue::LEVEL_ERROR,
+                    get_string($result->error, 'mod_pagecheck'),
+                    $filename
+                );
                 continue;
             }
 
@@ -194,12 +207,18 @@ class validator {
             }
 
             if (!$rules->filename_matches($filename)) {
-                $issues[] = new issue('badfilename', issue::LEVEL_ERROR,
-                    $rules->filenamepattern, $filename);
+                $issues[] = new issue(
+                    'badfilename',
+                    issue::LEVEL_ERROR,
+                    $rules->filenamepattern,
+                    $filename
+                );
             }
 
-            if ($rules->pagesize !== page_size::ANY && $result->pagesize !== null
-                    && $result->pagesize !== $rules->pagesize) {
+            if (
+                $rules->pagesize !== page_size::ANY && $result->pagesize !== null
+                    && $result->pagesize !== $rules->pagesize
+            ) {
                 $issues[] = new issue('badpagesize', issue::LEVEL_ERROR, (object) [
                     'found' => page_size::get_name($result->pagesize),
                     'expected' => page_size::get_name($rules->pagesize),
@@ -214,8 +233,10 @@ class validator {
                 $issues[] = new issue('notextlayer', issue::LEVEL_ERROR, null, $filename);
             }
 
-            if ($rules->rejectblankpages && $result->blankpages !== null
-                    && $result->blankpages > $rules->blankpagetolerance) {
+            if (
+                $rules->rejectblankpages && $result->blankpages !== null
+                    && $result->blankpages > $rules->blankpagetolerance
+            ) {
                 $issues[] = new issue('blankpages', issue::LEVEL_WARNING, (object) [
                     'count' => $result->blankpages,
                     'tolerance' => $rules->blankpagetolerance,
@@ -244,8 +265,12 @@ class validator {
                 continue;
             }
             if (isset($seen[$result->contenthash])) {
-                $issues[] = new issue('duplicatefile', issue::LEVEL_ERROR,
-                    $seen[$result->contenthash], $result->filename);
+                $issues[] = new issue(
+                    'duplicatefile',
+                    issue::LEVEL_ERROR,
+                    $seen[$result->contenthash],
+                    $result->filename
+                );
                 continue;
             }
             $seen[$result->contenthash] = $result->filename;

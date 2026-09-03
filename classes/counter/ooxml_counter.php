@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\counter;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Reads the page count of a .docx and the slide count of a .pptx.
  *
@@ -43,7 +41,6 @@ defined('MOODLE_INTERNAL') || die();
  * why the activity can be configured to accept PDF only.
  */
 class ooxml_counter implements counter_interface {
-
     /** @var string Where Word and PowerPoint keep the document statistics. */
     const PROPERTIES_PATH = 'docProps/app.xml';
 

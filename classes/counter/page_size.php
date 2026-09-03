@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\counter;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Turns the dimensions of a PDF page into the name of a paper size.
  *
@@ -34,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * discovers after handing it in.
  */
 class page_size {
-
     /** @var string The size could not be worked out. */
     const UNKNOWN = 'unknown';
 

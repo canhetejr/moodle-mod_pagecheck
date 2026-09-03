@@ -25,7 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
-
     $settings->add(new admin_setting_configtext(
         'mod_pagecheck/allowedextensions',
         get_string('allowedextensions', 'mod_pagecheck'),

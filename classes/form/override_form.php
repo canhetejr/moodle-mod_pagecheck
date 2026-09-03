@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\form;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Change the dates, the attempt allowance or the page limits for one group or one student.
  *
@@ -33,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * a teacher can give one group a later deadline without repeating the rest of the configuration.
  */
 class override_form extends \moodleform {
-
     /**
      * Build the form.
      *
@@ -57,12 +54,24 @@ class override_form extends \moodleform {
         $mform->addElement('select', 'target', $label, $targets);
         $mform->addRule('target', get_string('required'), 'required', null, 'client');
 
-        $mform->addElement('date_time_selector', 'allowsubmissionsfromdate',
-            get_string('allowsubmissionsfromdate', 'mod_pagecheck'), ['optional' => true]);
-        $mform->addElement('date_time_selector', 'duedate',
-            get_string('duedate', 'mod_pagecheck'), ['optional' => true]);
-        $mform->addElement('date_time_selector', 'cutoffdate',
-            get_string('cutoffdate', 'mod_pagecheck'), ['optional' => true]);
+        $mform->addElement(
+            'date_time_selector',
+            'allowsubmissionsfromdate',
+            get_string('allowsubmissionsfromdate', 'mod_pagecheck'),
+            ['optional' => true]
+        );
+        $mform->addElement(
+            'date_time_selector',
+            'duedate',
+            get_string('duedate', 'mod_pagecheck'),
+            ['optional' => true]
+        );
+        $mform->addElement(
+            'date_time_selector',
+            'cutoffdate',
+            get_string('cutoffdate', 'mod_pagecheck'),
+            ['optional' => true]
+        );
 
         $this->add_optional_number('maxattempts', get_string('maxattempts', 'mod_pagecheck'));
         $this->add_optional_number('minpages', get_string('minpages', 'mod_pagecheck'));
@@ -82,8 +91,12 @@ class override_form extends \moodleform {
         $mform = $this->_form;
 
         $group = [
-            $mform->createElement('advcheckbox', 'override' . $name, '',
-                get_string('overridethis', 'mod_pagecheck')),
+            $mform->createElement(
+                'advcheckbox',
+                'override' . $name,
+                '',
+                get_string('overridethis', 'mod_pagecheck')
+            ),
             $mform->createElement('text', $name, '', ['size' => 5]),
         ];
         $mform->addGroup($group, $name . 'group', $label, ' ', false);
@@ -101,8 +114,10 @@ class override_form extends \moodleform {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        if (!empty($data['cutoffdate']) && !empty($data['duedate'])
-                && $data['cutoffdate'] < $data['duedate']) {
+        if (
+            !empty($data['cutoffdate']) && !empty($data['duedate'])
+                && $data['cutoffdate'] < $data['duedate']
+        ) {
             $errors['cutoffdate'] = get_string('errorcutoffbeforedue', 'mod_pagecheck');
         }
 

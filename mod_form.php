@@ -33,7 +33,6 @@ use mod_pagecheck\local\rules;
  * The form a teacher fills in to configure the activity and every restriction it enforces.
  */
 class mod_pagecheck_mod_form extends moodleform_mod {
-
     /**
      * Build the form.
      *
@@ -59,29 +58,48 @@ class mod_pagecheck_mod_form extends moodleform_mod {
         $mform->addElement('header', 'availability', get_string('availability', 'mod_pagecheck'));
         $mform->setExpanded('availability', true);
 
-        $mform->addElement('date_time_selector', 'allowsubmissionsfromdate',
-            get_string('allowsubmissionsfromdate', 'mod_pagecheck'), ['optional' => true]);
+        $mform->addElement(
+            'date_time_selector',
+            'allowsubmissionsfromdate',
+            get_string('allowsubmissionsfromdate', 'mod_pagecheck'),
+            ['optional' => true]
+        );
         $mform->addHelpButton('allowsubmissionsfromdate', 'allowsubmissionsfromdate', 'mod_pagecheck');
 
-        $mform->addElement('date_time_selector', 'duedate',
-            get_string('duedate', 'mod_pagecheck'), ['optional' => true]);
+        $mform->addElement(
+            'date_time_selector',
+            'duedate',
+            get_string('duedate', 'mod_pagecheck'),
+            ['optional' => true]
+        );
         $mform->addHelpButton('duedate', 'duedate', 'mod_pagecheck');
 
-        $mform->addElement('date_time_selector', 'cutoffdate',
-            get_string('cutoffdate', 'mod_pagecheck'), ['optional' => true]);
+        $mform->addElement(
+            'date_time_selector',
+            'cutoffdate',
+            get_string('cutoffdate', 'mod_pagecheck'),
+            ['optional' => true]
+        );
         $mform->addHelpButton('cutoffdate', 'cutoffdate', 'mod_pagecheck');
 
         $mform->addElement('advcheckbox', 'blockafterdue', get_string('blockafterdue', 'mod_pagecheck'));
         $mform->addHelpButton('blockafterdue', 'blockafterdue', 'mod_pagecheck');
         $mform->setDefault('blockafterdue', 0);
 
-        $mform->addElement('select', 'maxattempts', get_string('maxattempts', 'mod_pagecheck'),
-            $this->get_attempt_options());
+        $mform->addElement(
+            'select',
+            'maxattempts',
+            get_string('maxattempts', 'mod_pagecheck'),
+            $this->get_attempt_options()
+        );
         $mform->addHelpButton('maxattempts', 'maxattempts', 'mod_pagecheck');
         $mform->setDefault('maxattempts', PAGECHECK_UNLIMITED_ATTEMPTS);
 
-        $mform->addElement('advcheckbox', 'requiresubmissionstatement',
-            get_string('requiresubmissionstatement', 'mod_pagecheck'));
+        $mform->addElement(
+            'advcheckbox',
+            'requiresubmissionstatement',
+            get_string('requiresubmissionstatement', 'mod_pagecheck')
+        );
         $mform->addHelpButton('requiresubmissionstatement', 'requiresubmissionstatement', 'mod_pagecheck');
 
         // Accepted files.
@@ -90,11 +108,17 @@ class mod_pagecheck_mod_form extends moodleform_mod {
 
         $mform->addElement('filetypes', 'allowedextensions', get_string('allowedextensions', 'mod_pagecheck'));
         $mform->addHelpButton('allowedextensions', 'allowedextensions', 'mod_pagecheck');
-        $mform->setDefault('allowedextensions',
-            !empty($config->allowedextensions) ? $config->allowedextensions : '.pdf');
+        $mform->setDefault(
+            'allowedextensions',
+            !empty($config->allowedextensions) ? $config->allowedextensions : '.pdf'
+        );
 
-        $mform->addElement('select', 'maxfiles', get_string('maxfiles', 'mod_pagecheck'),
-            array_combine(range(1, 20), range(1, 20)));
+        $mform->addElement(
+            'select',
+            'maxfiles',
+            get_string('maxfiles', 'mod_pagecheck'),
+            array_combine(range(1, 20), range(1, 20))
+        );
         $mform->setDefault('maxfiles', 1);
 
         $minfiles = [0 => get_string('nominimum', 'mod_pagecheck')] + array_combine(range(1, 20), range(1, 20));
@@ -102,19 +126,30 @@ class mod_pagecheck_mod_form extends moodleform_mod {
         $mform->addHelpButton('minfiles', 'minfiles', 'mod_pagecheck');
         $mform->setDefault('minfiles', 0);
 
-        $mform->addElement('text', 'filenamepattern',
-            get_string('filenamepattern', 'mod_pagecheck'), ['size' => 40]);
+        $mform->addElement(
+            'text',
+            'filenamepattern',
+            get_string('filenamepattern', 'mod_pagecheck'),
+            ['size' => 40]
+        );
         $mform->setType('filenamepattern', PARAM_TEXT);
         $mform->addHelpButton('filenamepattern', 'filenamepattern', 'mod_pagecheck');
         $mform->setDefault('filenamepattern', '');
 
-        $mform->addElement('advcheckbox', 'rejectduplicates',
-            get_string('rejectduplicates', 'mod_pagecheck'));
+        $mform->addElement(
+            'advcheckbox',
+            'rejectduplicates',
+            get_string('rejectduplicates', 'mod_pagecheck')
+        );
         $mform->addHelpButton('rejectduplicates', 'rejectduplicates', 'mod_pagecheck');
         $mform->setDefault('rejectduplicates', 0);
 
-        $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes, 0,
-            !empty($config->maxbytes) ? $config->maxbytes : 0);
+        $choices = get_max_upload_sizes(
+            $CFG->maxbytes,
+            $COURSE->maxbytes,
+            0,
+            !empty($config->maxbytes) ? $config->maxbytes : 0
+        );
         $choices[0] = get_string('courseuploadlimit') . ' (' . display_size($COURSE->maxbytes) . ')';
         $mform->addElement('select', 'maxbytes', get_string('maxbytes', 'mod_pagecheck'), $choices);
         $mform->addHelpButton('maxbytes', 'maxbytes', 'mod_pagecheck');
@@ -146,11 +181,17 @@ class mod_pagecheck_mod_form extends moodleform_mod {
         $mform->addHelpButton('countmode', 'countmode', 'mod_pagecheck');
         $mform->setDefault('countmode', rules::COUNT_TOTAL);
 
-        $mform->addElement('select', 'pagesize', get_string('pagesize', 'mod_pagecheck'),
-            page_size::get_menu());
+        $mform->addElement(
+            'select',
+            'pagesize',
+            get_string('pagesize', 'mod_pagecheck'),
+            page_size::get_menu()
+        );
         $mform->addHelpButton('pagesize', 'pagesize', 'mod_pagecheck');
-        $mform->setDefault('pagesize',
-            !empty($config->pagesize) ? $config->pagesize : page_size::ANY);
+        $mform->setDefault(
+            'pagesize',
+            !empty($config->pagesize) ? $config->pagesize : page_size::ANY
+        );
 
         $mform->addElement('select', 'strictness', get_string('strictness', 'mod_pagecheck'), [
             rules::STRICTNESS_BLOCK => get_string('strictness_block', 'mod_pagecheck'),
@@ -182,8 +223,12 @@ class mod_pagecheck_mod_form extends moodleform_mod {
         $mform->addHelpButton('rejectblankpages', 'rejectblankpages', 'mod_pagecheck');
         $mform->setDefault('rejectblankpages', 0);
 
-        $mform->addElement('text', 'blankpagetolerance', get_string('blankpagetolerance', 'mod_pagecheck'),
-            ['size' => 5]);
+        $mform->addElement(
+            'text',
+            'blankpagetolerance',
+            get_string('blankpagetolerance', 'mod_pagecheck'),
+            ['size' => 5]
+        );
         $mform->setType('blankpagetolerance', PARAM_INT);
         $mform->setDefault('blankpagetolerance', 0);
         $mform->hideIf('blankpagetolerance', 'rejectblankpages', 'notchecked');
@@ -221,8 +266,11 @@ class mod_pagecheck_mod_form extends moodleform_mod {
     public function add_completion_rules() {
         $mform = $this->_form;
 
-        $mform->addElement('checkbox', 'completionsubmit',
-            get_string('completionsubmit', 'mod_pagecheck'));
+        $mform->addElement(
+            'checkbox',
+            'completionsubmit',
+            get_string('completionsubmit', 'mod_pagecheck')
+        );
         $mform->addHelpButton('completionsubmit', 'completionsubmit', 'mod_pagecheck');
 
         return ['completionsubmit'];
@@ -248,13 +296,17 @@ class mod_pagecheck_mod_form extends moodleform_mod {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        if (!empty($data['allowsubmissionsfromdate']) && !empty($data['duedate'])
-                && $data['duedate'] < $data['allowsubmissionsfromdate']) {
+        if (
+            !empty($data['allowsubmissionsfromdate']) && !empty($data['duedate'])
+                && $data['duedate'] < $data['allowsubmissionsfromdate']
+        ) {
             $errors['duedate'] = get_string('errorduebeforeopen', 'mod_pagecheck');
         }
 
-        if (!empty($data['cutoffdate']) && !empty($data['duedate'])
-                && $data['cutoffdate'] < $data['duedate']) {
+        if (
+            !empty($data['cutoffdate']) && !empty($data['duedate'])
+                && $data['cutoffdate'] < $data['duedate']
+        ) {
             $errors['cutoffdate'] = get_string('errorcutoffbeforedue', 'mod_pagecheck');
         }
 
@@ -283,8 +335,10 @@ class mod_pagecheck_mod_form extends moodleform_mod {
         }
 
         $pattern = trim((string) ($data['filenamepattern'] ?? ''));
-        if ($pattern !== '' && strpos($pattern, '*') === false && strpos($pattern, '?') === false
-                && strpos($pattern, '.') === false) {
+        if (
+            $pattern !== '' && strpos($pattern, '*') === false && strpos($pattern, '?') === false
+                && strpos($pattern, '.') === false
+        ) {
             // A pattern with no wildcard and no extension only ever matches one exact name, which
             // is almost never what was meant.
             $errors['filenamepattern'] = get_string('errorpatternnowildcard', 'mod_pagecheck');

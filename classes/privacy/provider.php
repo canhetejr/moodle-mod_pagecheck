@@ -33,8 +33,6 @@ use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 use mod_pagecheck\local\submission_manager;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Describes and exports the personal data this activity stores.
  */
@@ -42,7 +40,6 @@ class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\core_userlist_provider,
     \core_privacy\local\request\plugin\provider {
-
     /**
      * Describe the personal data this plugin stores.
      *
@@ -134,16 +131,22 @@ class provider implements
         $join = "JOIN {course_modules} cm ON cm.id = :cmid
                  JOIN {modules} m ON m.id = cm.module AND m.name = :modname";
 
-        $userlist->add_from_sql('userid',
+        $userlist->add_from_sql(
+            'userid',
             "SELECT s.userid FROM {pagecheck_submissions} s $join WHERE s.pagecheckid = cm.instance",
-            $params);
-        $userlist->add_from_sql('userid',
+            $params
+        );
+        $userlist->add_from_sql(
+            'userid',
             "SELECT g.userid FROM {pagecheck_grades} g $join WHERE g.pagecheckid = cm.instance",
-            $params);
-        $userlist->add_from_sql('userid',
+            $params
+        );
+        $userlist->add_from_sql(
+            'userid',
             "SELECT o.userid FROM {pagecheck_overrides} o $join
               WHERE o.pagecheckid = cm.instance AND o.userid > 0",
-            $params);
+            $params
+        );
     }
 
     /**
@@ -166,8 +169,10 @@ class provider implements
                 continue;
             }
 
-            $submissions = $DB->get_records('pagecheck_submissions',
-                ['pagecheckid' => $cm->instance, 'userid' => $user->id]);
+            $submissions = $DB->get_records(
+                'pagecheck_submissions',
+                ['pagecheckid' => $cm->instance, 'userid' => $user->id]
+            );
 
             foreach ($submissions as $submission) {
                 $subcontext = [
@@ -183,7 +188,7 @@ class provider implements
                     'timemodified' => transform::datetime($submission->timemodified),
                     'timesubmitted' => $submission->timesubmitted
                         ? transform::datetime($submission->timesubmitted) : null,
-                    'files' => array_values(array_map(function($file) {
+                    'files' => array_values(array_map(function ($file) {
                         return (object) [
                             'filename' => $file->filename,
                             'filesize' => $file->filesize,
@@ -194,12 +199,18 @@ class provider implements
                 ];
 
                 writer::with_context($context)->export_data($subcontext, $data);
-                writer::with_context($context)->export_area_files($subcontext, 'mod_pagecheck',
-                    submission_manager::FILEAREA, $submission->id);
+                writer::with_context($context)->export_area_files(
+                    $subcontext,
+                    'mod_pagecheck',
+                    submission_manager::FILEAREA,
+                    $submission->id
+                );
             }
 
-            $grade = $DB->get_record('pagecheck_grades',
-                ['pagecheckid' => $cm->instance, 'userid' => $user->id]);
+            $grade = $DB->get_record(
+                'pagecheck_grades',
+                ['pagecheckid' => $cm->instance, 'userid' => $user->id]
+            );
             if ($grade) {
                 writer::with_context($context)->export_data(
                     [get_string('privacy:gradepath', 'mod_pagecheck')],
@@ -230,13 +241,20 @@ class provider implements
             return;
         }
 
-        get_file_storage()->delete_area_files($context->id, 'mod_pagecheck',
-            submission_manager::FILEAREA);
+        get_file_storage()->delete_area_files(
+            $context->id,
+            'mod_pagecheck',
+            submission_manager::FILEAREA
+        );
 
-        $submissionids = $DB->get_fieldset_select('pagecheck_submissions', 'id',
-            'pagecheckid = ?', [$cm->instance]);
+        $submissionids = $DB->get_fieldset_select(
+            'pagecheck_submissions',
+            'id',
+            'pagecheckid = ?',
+            [$cm->instance]
+        );
         if ($submissionids) {
-            list($insql, $params) = $DB->get_in_or_equal($submissionids);
+            [$insql, $params] = $DB->get_in_or_equal($submissionids);
             $DB->delete_records_select('pagecheck_files', "submissionid $insql", $params);
         }
         $DB->delete_records('pagecheck_submissions', ['pagecheckid' => $cm->instance]);
@@ -285,27 +303,44 @@ class provider implements
             return;
         }
 
-        list($insql, $params) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         $params['pagecheckid'] = $cm->instance;
 
-        $submissionids = $DB->get_fieldset_select('pagecheck_submissions', 'id',
-            "pagecheckid = :pagecheckid AND userid $insql", $params);
+        $submissionids = $DB->get_fieldset_select(
+            'pagecheck_submissions',
+            'id',
+            "pagecheckid = :pagecheckid AND userid $insql",
+            $params
+        );
 
         if ($submissionids) {
             $fs = get_file_storage();
             foreach ($submissionids as $submissionid) {
-                $fs->delete_area_files($context->id, 'mod_pagecheck',
-                    submission_manager::FILEAREA, $submissionid);
+                $fs->delete_area_files(
+                    $context->id,
+                    'mod_pagecheck',
+                    submission_manager::FILEAREA,
+                    $submissionid
+                );
             }
-            list($fileinsql, $fileparams) = $DB->get_in_or_equal($submissionids);
+            [$fileinsql, $fileparams] = $DB->get_in_or_equal($submissionids);
             $DB->delete_records_select('pagecheck_files', "submissionid $fileinsql", $fileparams);
-            $DB->delete_records_select('pagecheck_submissions',
-                "pagecheckid = :pagecheckid AND userid $insql", $params);
+            $DB->delete_records_select(
+                'pagecheck_submissions',
+                "pagecheckid = :pagecheckid AND userid $insql",
+                $params
+            );
         }
 
-        $DB->delete_records_select('pagecheck_grades',
-            "pagecheckid = :pagecheckid AND userid $insql", $params);
-        $DB->delete_records_select('pagecheck_overrides',
-            "pagecheckid = :pagecheckid AND userid $insql", $params);
+        $DB->delete_records_select(
+            'pagecheck_grades',
+            "pagecheckid = :pagecheckid AND userid $insql",
+            $params
+        );
+        $DB->delete_records_select(
+            'pagecheck_overrides',
+            "pagecheckid = :pagecheckid AND userid $insql",
+            $params
+        );
     }
 }

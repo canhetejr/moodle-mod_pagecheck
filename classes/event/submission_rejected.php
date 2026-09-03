@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Fired when the server refuses a submission because it breaks a restriction.
  *
@@ -33,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * rule stopped which student, rather than only hearing about it by email.
  */
 class submission_rejected extends \core\event\base {
-
     /**
      * Describe the event.
      *

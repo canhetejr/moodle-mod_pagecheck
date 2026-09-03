@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Everything the grading screen and the submissions report need to know about grades.
  *
@@ -34,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * stores the index of the scale item, and a number shown raw would be meaningless to a teacher.
  */
 class grader {
-
     /** @var \stdClass The activity instance record. */
     protected $pagecheck;
 

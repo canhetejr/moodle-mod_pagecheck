@@ -30,7 +30,7 @@ use mod_pagecheck\local\submission_manager;
 $id = required_param('id', PARAM_INT);
 $confirm = optional_param('confirm', 0, PARAM_BOOL);
 
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'pagecheck');
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'pagecheck');
 $pagecheck = $DB->get_record('pagecheck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -41,8 +41,12 @@ $manager = new submission_manager($cm, $pagecheck, $context);
 $viewurl = new moodle_url('/mod/pagecheck/view.php', ['id' => $cm->id]);
 
 if (!$manager->can_start_new_attempt($USER->id)) {
-    redirect($viewurl, get_string('errornonewattempt', 'mod_pagecheck'), null,
-        \core\output\notification::NOTIFY_ERROR);
+    redirect(
+        $viewurl,
+        get_string('errornonewattempt', 'mod_pagecheck'),
+        null,
+        \core\output\notification::NOTIFY_ERROR
+    );
 }
 
 $PAGE->set_url('/mod/pagecheck/newattempt.php', ['id' => $cm->id]);

@@ -33,7 +33,7 @@ $action = optional_param('action', 'list', PARAM_ALPHA);
 $mode = optional_param('mode', 'group', PARAM_ALPHA);
 $overrideid = optional_param('overrideid', 0, PARAM_INT);
 
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'pagecheck');
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'pagecheck');
 $pagecheck = $DB->get_record('pagecheck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -49,8 +49,12 @@ $PAGE->set_context($context);
 if ($action === 'delete') {
     require_sesskey();
     $DB->delete_records('pagecheck_overrides', ['id' => $overrideid, 'pagecheckid' => $pagecheck->id]);
-    redirect($baseurl, get_string('overridedeleted', 'mod_pagecheck'), null,
-        \core\output\notification::NOTIFY_SUCCESS);
+    redirect(
+        $baseurl,
+        get_string('overridedeleted', 'mod_pagecheck'),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 
 if ($action === 'add' || $action === 'edit') {
@@ -61,8 +65,13 @@ if ($action === 'add' || $action === 'edit') {
             $targets[$group->id] = format_string($group->name, true, ['context' => $context]);
         }
     } else {
-        $users = get_enrolled_users($context, 'mod/pagecheck:submit', 0,
-            \mod_pagecheck\local\report::user_fields_sql(), 'u.lastname, u.firstname');
+        $users = get_enrolled_users(
+            $context,
+            'mod/pagecheck:submit',
+            0,
+            \mod_pagecheck\local\report::user_fields_sql(),
+            'u.lastname, u.firstname'
+        );
         $targets = [];
         foreach ($users as $user) {
             $targets[$user->id] = fullname($user);
@@ -70,8 +79,12 @@ if ($action === 'add' || $action === 'edit') {
     }
 
     if (!$targets) {
-        redirect($baseurl, get_string('errornotargets', 'mod_pagecheck'), null,
-            \core\output\notification::NOTIFY_ERROR);
+        redirect(
+            $baseurl,
+            get_string('errornotargets', 'mod_pagecheck'),
+            null,
+            \core\output\notification::NOTIFY_ERROR
+        );
     }
 
     $form = new override_form(null, [
@@ -82,8 +95,12 @@ if ($action === 'add' || $action === 'edit') {
     ]);
 
     if ($action === 'edit' && $overrideid) {
-        $override = $DB->get_record('pagecheck_overrides',
-            ['id' => $overrideid, 'pagecheckid' => $pagecheck->id], '*', MUST_EXIST);
+        $override = $DB->get_record(
+            'pagecheck_overrides',
+            ['id' => $overrideid, 'pagecheckid' => $pagecheck->id],
+            '*',
+            MUST_EXIST
+        );
         $data = [
             'target' => $mode === 'group' ? $override->groupid : $override->userid,
             'allowsubmissionsfromdate' => (int) $override->allowsubmissionsfromdate,
@@ -125,8 +142,12 @@ if ($action === 'add' || $action === 'edit') {
             $DB->insert_record('pagecheck_overrides', $record);
         }
 
-        redirect($baseurl, get_string('overridesaved', 'mod_pagecheck'), null,
-            \core\output\notification::NOTIFY_SUCCESS);
+        redirect(
+            $baseurl,
+            get_string('overridesaved', 'mod_pagecheck'),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
     }
 
     echo $OUTPUT->header();
@@ -136,15 +157,20 @@ if ($action === 'add' || $action === 'edit') {
     exit;
 }
 
-$overrides = $DB->get_records('pagecheck_overrides', ['pagecheckid' => $pagecheck->id],
-    'sortorder ASC, id ASC');
+$overrides = $DB->get_records(
+    'pagecheck_overrides',
+    ['pagecheckid' => $pagecheck->id],
+    'sortorder ASC, id ASC'
+);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('overrides', 'mod_pagecheck'));
 
 if (!$overrides) {
-    echo $OUTPUT->notification(get_string('nooverrides', 'mod_pagecheck'),
-        \core\output\notification::NOTIFY_INFO);
+    echo $OUTPUT->notification(
+        get_string('nooverrides', 'mod_pagecheck'),
+        \core\output\notification::NOTIFY_INFO
+    );
 } else {
     $table = new html_table();
     $table->head = [
@@ -161,8 +187,11 @@ if (!$overrides) {
         if ($override->groupid) {
             $group = groups_get_group($override->groupid);
             $target = $group
-                ? get_string('overridegrouplabel', 'mod_pagecheck',
-                    format_string($group->name, true, ['context' => $context]))
+                ? get_string(
+                    'overridegrouplabel',
+                    'mod_pagecheck',
+                    format_string($group->name, true, ['context' => $context])
+                )
                 : get_string('overridemissingtarget', 'mod_pagecheck');
             $editmode = 'group';
         } else {

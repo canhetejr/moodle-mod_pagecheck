@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\counter;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Counts the pages of a PDF, from the most reliable source to the most forgiving one.
  *
@@ -37,7 +35,6 @@ defined('MOODLE_INTERNAL') || die();
  * 3. Ghostscript, only when the administrator has enabled it and $CFG->pathtogs is configured.
  */
 class pdf_counter implements counter_interface {
-
     /**
      * Whether this counter can handle the given file.
      *

@@ -24,13 +24,10 @@
 
 namespace mod_pagecheck\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Value object describing one violated restriction, ready to be shown to the student.
  */
 class issue {
-
     /** @var string The submission cannot be accepted. */
     const LEVEL_ERROR = 'error';
 

@@ -26,13 +26,10 @@ namespace mod_pagecheck\form;
 
 use mod_pagecheck\local\grader;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Award a grade and write a comment for one student.
  */
 class grade_form extends \moodleform {
-
     /**
      * Build the form.
      *
@@ -58,15 +55,23 @@ class grade_form extends \moodleform {
             } else {
                 // A menu of a hundred and one entries would be worse than a box for a grade out
                 // of a hundred, so points are typed.
-                $mform->addElement('text', 'grade', get_string('gradeoutof', 'mod_pagecheck',
-                    format_float($grader->get_max_grade(), 2)), ['size' => 8]);
+                $mform->addElement('text', 'grade', get_string(
+                    'gradeoutof',
+                    'mod_pagecheck',
+                    format_float($grader->get_max_grade(), 2)
+                ), ['size' => 8]);
                 $mform->setType('grade', PARAM_RAW_TRIMMED);
             }
             $mform->addHelpButton('grade', 'gradeentry', 'mod_pagecheck');
         }
 
-        $mform->addElement('editor', 'feedback', get_string('feedback', 'mod_pagecheck'),
-            null, $this->_customdata['editoroptions']);
+        $mform->addElement(
+            'editor',
+            'feedback',
+            get_string('feedback', 'mod_pagecheck'),
+            null,
+            $this->_customdata['editoroptions']
+        );
         $mform->setType('feedback', PARAM_RAW);
         $mform->addHelpButton('feedback', 'feedback', 'mod_pagecheck');
 
@@ -74,8 +79,11 @@ class grade_form extends \moodleform {
             $mform->createElement('submit', 'savegrade', get_string('savechanges')),
         ];
         if (!empty($this->_customdata['hasnext'])) {
-            $buttons[] = $mform->createElement('submit', 'savenext',
-                get_string('savechangesandnext', 'mod_pagecheck'));
+            $buttons[] = $mform->createElement(
+                'submit',
+                'savenext',
+                get_string('savechangesandnext', 'mod_pagecheck')
+            );
         }
         $buttons[] = $mform->createElement('cancel');
 
@@ -104,12 +112,15 @@ class grade_form extends \moodleform {
             return $errors;
         }
 
-        list($valid) = $grader->parse_grade($data['grade']);
+        [$valid] = $grader->parse_grade($data['grade']);
         if (!$valid) {
             $errors['grade'] = $grader->uses_scale()
                 ? get_string('errorgradeinvalid', 'mod_pagecheck')
-                : get_string('errorgradeoutofrange', 'mod_pagecheck',
-                    format_float($grader->get_max_grade(), 2));
+                : get_string(
+                    'errorgradeoutofrange',
+                    'mod_pagecheck',
+                    format_float($grader->get_max_grade(), 2)
+                );
         }
 
         return $errors;

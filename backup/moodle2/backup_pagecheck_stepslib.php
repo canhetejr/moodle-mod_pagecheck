@@ -22,13 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Defines what a backup of one pagecheck activity contains.
  */
 class backup_pagecheck_activity_structure_step extends backup_activity_structure_step {
-
     /**
      * Build the backup structure.
      *
@@ -102,8 +99,11 @@ class backup_pagecheck_activity_structure_step extends backup_activity_structure
         $grade->annotate_ids('user', 'grader');
 
         $pagecheck->annotate_files('mod_pagecheck', 'intro', null);
-        $submission->annotate_files('mod_pagecheck',
-            \mod_pagecheck\local\submission_manager::FILEAREA, 'id');
+        $submission->annotate_files(
+            'mod_pagecheck',
+            \mod_pagecheck\local\submission_manager::FILEAREA,
+            'id'
+        );
 
         return $this->prepare_activity_structure($pagecheck);
     }

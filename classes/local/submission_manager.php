@@ -27,8 +27,6 @@ namespace mod_pagecheck\local;
 use mod_pagecheck\counter\count_result;
 use mod_pagecheck\counter\counter_factory;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Everything that happens between a student choosing a file and the teacher seeing the result.
  *
@@ -36,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * pagecheck_files table and only recomputed when the content of the file actually changed.
  */
 class submission_manager {
-
     /** @var string File area holding the files a student submitted. */
     const FILEAREA = 'submission';
 
@@ -297,9 +294,11 @@ class submission_manager {
             // A null paper size means the row was written before this plugin knew how to read
             // one, not that the format has none: that case is stored as an empty string. Such a
             // row is recounted once, so an existing submission heals itself on the next visit.
-            if (!$force && $record && $record->contenthash === $file->get_contenthash()
+            if (
+                !$force && $record && $record->contenthash === $file->get_contenthash()
                     && $record->pagesize !== null
-                    && (!$analysetext || $record->hastext !== null)) {
+                    && (!$analysetext || $record->hastext !== null)
+            ) {
                 $results[$hash] = $this->result_from_record($record);
                 continue;
             }
@@ -363,8 +362,12 @@ class submission_manager {
      * @param \stdClass|null $existing the row to update, when there is one
      * @return void
      */
-    protected function store_result(\stdClass $submission, \stored_file $file,
-            count_result $result, $existing = null) {
+    protected function store_result(
+        \stdClass $submission,
+        \stored_file $file,
+        count_result $result,
+        $existing = null
+    ) {
         global $DB;
 
         $record = (object) [
@@ -454,7 +457,7 @@ class submission_manager {
             'maxbytes' => $maxbytes,
             'maxfiles' => $rules->maxfiles,
             'accepted_types' => $rules->allowedextensions
-                ? array_map(function($extension) {
+                ? array_map(function ($extension) {
                     return '.' . $extension;
                 }, $rules->allowedextensions)
                 : '*',

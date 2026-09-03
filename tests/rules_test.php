@@ -26,15 +26,12 @@ namespace mod_pagecheck;
 
 use mod_pagecheck\local\rules;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Tests for how overrides are resolved.
  *
  * @covers \mod_pagecheck\local\rules
  */
 class rules_test extends \advanced_testcase {
-
     /** @var \stdClass The course the activity lives in. */
     protected $course;
 

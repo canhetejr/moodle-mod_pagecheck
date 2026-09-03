@@ -26,13 +26,10 @@ namespace mod_pagecheck\completion;
 
 use core_completion\activity_custom_completion;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Reports whether the student has sent an attempt for grading.
  */
 class custom_completion extends activity_custom_completion {
-
     /**
      * Whether a given rule is complete for the current user.
      *

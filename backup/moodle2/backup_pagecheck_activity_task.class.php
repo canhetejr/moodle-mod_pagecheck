@@ -30,7 +30,6 @@ require_once($CFG->dirroot . '/mod/pagecheck/backup/moodle2/backup_pagecheck_ste
  * Backs up one pagecheck activity.
  */
 class backup_pagecheck_activity_task extends backup_activity_task {
-
     /**
      * This activity has no backup settings of its own.
      *

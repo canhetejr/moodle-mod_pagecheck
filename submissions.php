@@ -36,7 +36,7 @@ $perpage = optional_param('perpage', 25, PARAM_INT);
 $download = optional_param('download', '', PARAM_ALPHA);
 $filter = optional_param('filter', report::FILTER_ALL, PARAM_ALPHA);
 
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'pagecheck');
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'pagecheck');
 $pagecheck = $DB->get_record('pagecheck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -85,8 +85,10 @@ if ($quickgrade && optional_param('savegrades', 0, PARAM_BOOL) && confirm_sesske
             continue;
         }
 
-        $record = $DB->get_record('pagecheck_grades',
-            ['pagecheckid' => $pagecheck->id, 'userid' => $row->user->id]);
+        $record = $DB->get_record(
+            'pagecheck_grades',
+            ['pagecheckid' => $pagecheck->id, 'userid' => $row->user->id]
+        );
         if ($record) {
             $record->grade = $grade;
             $record->grader = $USER->id;
@@ -107,8 +109,12 @@ if ($quickgrade && optional_param('savegrades', 0, PARAM_BOOL) && confirm_sesske
     if ($updated) {
         pagecheck_update_grades($pagecheck);
     }
-    redirect($baseurl, get_string('gradessaved', 'mod_pagecheck', $updated), null,
-        \core\output\notification::NOTIFY_SUCCESS);
+    redirect(
+        $baseurl,
+        get_string('gradessaved', 'mod_pagecheck', $updated),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 
 // Export.
@@ -123,7 +129,7 @@ if ($download !== '') {
 
     $records = [];
     foreach ($rows as $row) {
-        $messages = array_map(function(issue $issue) {
+        $messages = array_map(function (issue $issue) {
             return $issue->get_full_message();
         }, $row->issues);
 
@@ -157,16 +163,24 @@ if ($groupmode != NOGROUPS) {
     groups_print_activity_menu($cm, $baseurl);
 }
 
-// single_select turns every parameter of the URL into a hidden field, so the base URL has to
+// Every parameter of the URL becomes a hidden field in single_select, so the base URL has to
 // arrive without the one the select itself is named after.
 $selecturl = new moodle_url($baseurl);
 $selecturl->remove_params('filter');
-echo $OUTPUT->single_select($selecturl, 'filter',
-    report::get_filter_options(), $filter, null, 'filterform');
+echo $OUTPUT->single_select(
+    $selecturl,
+    'filter',
+    report::get_filter_options(),
+    $filter,
+    null,
+    'filterform'
+);
 
 if (!$pagerows) {
-    echo $OUTPUT->notification(get_string('nosubmissions', 'mod_pagecheck'),
-        \core\output\notification::NOTIFY_INFO);
+    echo $OUTPUT->notification(
+        get_string('nosubmissions', 'mod_pagecheck'),
+        \core\output\notification::NOTIFY_INFO
+    );
     echo $OUTPUT->footer();
     exit;
 }
@@ -231,11 +245,15 @@ foreach ($pagerows as $row) {
         );
     }
 
-    $name = html_writer::link(new moodle_url('/user/view.php',
-        ['id' => $row->user->id, 'course' => $course->id]), fullname($row->user));
+    $name = html_writer::link(new moodle_url(
+        '/user/view.php',
+        ['id' => $row->user->id, 'course' => $course->id]
+    ), fullname($row->user));
     if (!empty($row->user->pagechecknotenrolled)) {
-        $name .= ' ' . html_writer::span(get_string('notenrolled', 'mod_pagecheck'),
-            'badge bg-warning text-dark');
+        $name .= ' ' . html_writer::span(
+            get_string('notenrolled', 'mod_pagecheck'),
+            'badge bg-warning text-dark'
+        );
     }
 
     // The furthest step reached, so a marked submission does not still read "waiting", and two
@@ -247,8 +265,10 @@ foreach ($pagerows as $row) {
         $state = 'error';
     } else if ($row->issues) {
         $state = 'warn';
-    } else if (in_array($furthest, [submission_manager::STATUS_SUBMITTED,
-            submission_manager::STATE_GRADED], true)) {
+    } else if (
+        in_array($furthest, [submission_manager::STATUS_SUBMITTED,
+            submission_manager::STATE_GRADED], true)
+    ) {
         $state = 'ok';
     }
 
@@ -266,8 +286,10 @@ foreach ($pagerows as $row) {
         $pagescell = html_writer::div($pagescell, 'pagecheck-mini');
     }
 
-    $statuscell = html_writer::span(get_string('status_' . $furthest, 'mod_pagecheck'),
-        'pagecheck-pill pagecheck-pill--' . $state);
+    $statuscell = html_writer::span(
+        get_string('status_' . $furthest, 'mod_pagecheck'),
+        'pagecheck-pill pagecheck-pill--' . $state
+    );
 
     $table->data[] = [
         $name,
@@ -275,7 +297,9 @@ foreach ($pagerows as $row) {
         $pagescell,
         $files ? implode(html_writer::empty_tag('br'), $files) : '-',
         $messages ? implode(' ', $messages) : html_writer::span(
-            get_string('checkspassed', 'mod_pagecheck'), 'pagecheck-chip pagecheck-chip--ok'),
+            get_string('checkspassed', 'mod_pagecheck'),
+            'pagecheck-chip pagecheck-chip--ok'
+        ),
         $gradecell,
     ];
 }

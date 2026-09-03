@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Turns a list of participants into what the teacher sees, and into what a CSV export contains.
  *
@@ -33,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * thing as the screen they downloaded it from.
  */
 class report {
-
     /** @var string Every participant. */
     const FILTER_ALL = 'all';
 
@@ -76,14 +73,22 @@ class report {
      * @param int $groupid the group being viewed, or 0 for all of them
      * @return \stdClass[] user records keyed by user id
      */
-    public static function get_participants(\context_module $context, int $pagecheckid,
-            int $groupid = 0): array {
+    public static function get_participants(
+        \context_module $context,
+        int $pagecheckid,
+        int $groupid = 0
+    ): array {
         global $DB;
 
         $fields = self::user_fields_sql();
 
-        $participants = get_enrolled_users($context, 'mod/pagecheck:submit', $groupid,
-            $fields, 'u.lastname, u.firstname');
+        $participants = get_enrolled_users(
+            $context,
+            'mod/pagecheck:submit',
+            $groupid,
+            $fields,
+            'u.lastname, u.firstname'
+        );
 
         $submitters = $DB->get_records_sql(
             "SELECT DISTINCT $fields
@@ -107,7 +112,7 @@ class report {
         }
 
         if ($added) {
-            // get_enrolled_users() already sorted its own rows; re-sort once the extras are in.
+            // Enrolled users arrive sorted already; re-sort once the extras are in.
             foreach ($participants as $user) {
                 $user->pagechecksortname = $user->lastname . ' ' . $user->firstname;
             }
@@ -128,12 +133,19 @@ class report {
      * @param string $filter one of the FILTER_* constants
      * @return \stdClass[] rows with user, submission, status, pages, issues and grade
      */
-    public static function build_rows(array $participants, submission_manager $manager,
-            string $filter = self::FILTER_ALL): array {
+    public static function build_rows(
+        array $participants,
+        submission_manager $manager,
+        string $filter = self::FILTER_ALL
+    ): array {
         global $DB;
 
-        $grades = $DB->get_records_menu('pagecheck_grades',
-            ['pagecheckid' => $manager->get_instance()->id], '', 'userid, grade');
+        $grades = $DB->get_records_menu(
+            'pagecheck_grades',
+            ['pagecheckid' => $manager->get_instance()->id],
+            '',
+            'userid, grade'
+        );
 
         $rows = [];
         foreach ($participants as $user) {

@@ -148,7 +148,7 @@ function pagecheck_delete_instance($id) {
 
     $submissionids = $DB->get_fieldset_select('pagecheck_submissions', 'id', 'pagecheckid = ?', [$id]);
     if ($submissionids) {
-        list($insql, $params) = $DB->get_in_or_equal($submissionids);
+        [$insql, $params] = $DB->get_in_or_equal($submissionids);
         $DB->delete_records_select('pagecheck_files', "submissionid $insql", $params);
     }
     $DB->delete_records('pagecheck_submissions', ['pagecheckid' => $id]);
@@ -190,8 +190,16 @@ function pagecheck_grade_item_update($pagecheck, $grades = null) {
         $grades = null;
     }
 
-    return grade_update('mod/pagecheck', $pagecheck->course, 'mod', 'pagecheck',
-        $pagecheck->id, 0, $grades, $item);
+    return grade_update(
+        'mod/pagecheck',
+        $pagecheck->course,
+        'mod',
+        'pagecheck',
+        $pagecheck->id,
+        0,
+        $grades,
+        $item
+    );
 }
 
 /**
@@ -201,8 +209,16 @@ function pagecheck_grade_item_update($pagecheck, $grades = null) {
  * @return int a GRADE_UPDATE_* constant
  */
 function pagecheck_grade_item_delete($pagecheck) {
-    return grade_update('mod/pagecheck', $pagecheck->course, 'mod', 'pagecheck',
-        $pagecheck->id, 0, null, ['deleted' => 1]);
+    return grade_update(
+        'mod/pagecheck',
+        $pagecheck->course,
+        'mod',
+        'pagecheck',
+        $pagecheck->id,
+        0,
+        null,
+        ['deleted' => 1]
+    );
 }
 
 /**
@@ -350,8 +366,11 @@ function pagecheck_update_calendar_events($pagecheck) {
  * @param int $userid the user the event is shown to, 0 for the current user
  * @return \core_calendar\local\event\entities\action_interface|null
  */
-function mod_pagecheck_core_calendar_provide_event_action(calendar_event $event,
-        \core_calendar\action_factory $factory, $userid = 0) {
+function mod_pagecheck_core_calendar_provide_event_action(
+    calendar_event $event,
+    \core_calendar\action_factory $factory,
+    $userid = 0
+) {
     global $DB, $USER;
 
     $userid = $userid ?: $USER->id;
@@ -426,8 +445,14 @@ function pagecheck_pluginfile($course, $cm, $context, $filearea, $args, $forcedo
     $filename = array_pop($args);
     $filepath = $args ? '/' . implode('/', $args) . '/' : '/';
 
-    $file = get_file_storage()->get_file($context->id, 'mod_pagecheck',
-        $filearea, $itemid, $filepath, $filename);
+    $file = get_file_storage()->get_file(
+        $context->id,
+        'mod_pagecheck',
+        $filearea,
+        $itemid,
+        $filepath,
+        $filename
+    );
     if (!$file || $file->is_directory()) {
         return false;
     }
@@ -495,7 +520,7 @@ function pagecheck_reset_userdata($data) {
         }
         $submissionids = $DB->get_fieldset_select('pagecheck_submissions', 'id', 'pagecheckid = ?', [$pagecheck->id]);
         if ($submissionids) {
-            list($insql, $params) = $DB->get_in_or_equal($submissionids);
+            [$insql, $params] = $DB->get_in_or_equal($submissionids);
             $DB->delete_records_select('pagecheck_files', "submissionid $insql", $params);
         }
         $DB->delete_records('pagecheck_submissions', ['pagecheckid' => $pagecheck->id]);
@@ -520,6 +545,9 @@ function pagecheck_reset_userdata($data) {
  */
 function pagecheck_reset_course_form_definition(&$mform) {
     $mform->addElement('header', 'pagecheckheader', get_string('modulenameplural', 'mod_pagecheck'));
-    $mform->addElement('advcheckbox', 'reset_pagecheck_submissions',
-        get_string('deleteallsubmissions', 'mod_pagecheck'));
+    $mform->addElement(
+        'advcheckbox',
+        'reset_pagecheck_submissions',
+        get_string('deleteallsubmissions', 'mod_pagecheck')
+    );
 }

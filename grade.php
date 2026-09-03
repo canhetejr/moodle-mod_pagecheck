@@ -36,7 +36,7 @@ $userid = required_param('userid', PARAM_INT);
 $filter = optional_param('filter', report::FILTER_ALL, PARAM_ALPHA);
 $page = optional_param('page', 0, PARAM_INT);
 
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'pagecheck');
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'pagecheck');
 $pagecheck = $DB->get_record('pagecheck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -111,7 +111,7 @@ if ($data = $form->get_data()) {
     $grade = null;
     if ($grader->is_graded() && isset($data->grade)) {
         if (!$grader->uses_scale() || (int) $data->grade !== -1) {
-            list($valid, $grade) = $grader->parse_grade($data->grade);
+            [$valid, $grade] = $grader->parse_grade($data->grade);
             if (!$valid) {
                 $grade = null;
             }
@@ -133,8 +133,12 @@ if ($data = $form->get_data()) {
         ]));
     }
 
-    redirect($listurl, get_string('gradesaved', 'mod_pagecheck', fullname($student)), null,
-        \core\output\notification::NOTIFY_SUCCESS);
+    redirect(
+        $listurl,
+        get_string('gradesaved', 'mod_pagecheck', fullname($student)),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 
 $rules = $manager->get_rules($userid);

@@ -47,7 +47,6 @@ require_once($CFG->dirroot . '/mod/pagecheck/tests/fixtures/file_builder.php');
  * @covers \mod_pagecheck\counter\page_size
  */
 class counter_test extends \advanced_testcase {
-
     /** @var string A directory the test may write sample documents into. */
     protected $dir;
 
@@ -341,10 +340,14 @@ class counter_test extends \advanced_testcase {
      * @return void
      */
     public function test_factory_picks_the_right_counter(): void {
-        $this->assertInstanceOf(pdf_counter::class,
-            counter_factory::get_counter('application/pdf', 'pdf'));
+        $this->assertInstanceOf(
+            pdf_counter::class,
+            counter_factory::get_counter('application/pdf', 'pdf')
+        );
         $this->assertInstanceOf(ooxml_counter::class, counter_factory::get_counter(
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx'));
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'docx'
+        ));
         $this->assertNull(counter_factory::get_counter('text/plain', 'txt'));
     }
 

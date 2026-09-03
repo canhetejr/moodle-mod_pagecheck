@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Execute the mod_pagecheck upgrade steps from the given old version.
  *
@@ -36,7 +34,6 @@ function xmldb_pagecheck_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2026090400) {
-
         // Five further restrictions a teacher can set, and the paper size we detect per file.
         $table = new xmldb_table('pagecheck');
 
@@ -64,7 +61,6 @@ function xmldb_pagecheck_upgrade($oldversion) {
     }
 
     if ($oldversion < 2026090500) {
-
         // A grade on its own tells a student very little, so grading gained a comment.
         $table = new xmldb_table('pagecheck_grades');
 

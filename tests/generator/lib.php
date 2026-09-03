@@ -22,13 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Creates pagecheck activities for the tests.
  */
 class mod_pagecheck_generator extends testing_module_generator {
-
     /**
      * Create an activity instance, filling in whatever the caller left out.
      *

@@ -24,13 +24,10 @@
 
 namespace mod_pagecheck\counter;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Entry point of the counting layer.
  */
 class counter_factory {
-
     /**
      * Every counter, in the order they get asked whether they support a file.
      *

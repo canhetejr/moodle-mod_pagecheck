@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\counter;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Value object describing what we managed to learn about a file.
  *
@@ -33,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * "this file has no pages" apart from "we could not work out how many pages this file has".
  */
 class count_result {
-
     /** @var string The page count could not be determined at all. */
     const METHOD_UNKNOWN = 'unknown';
 

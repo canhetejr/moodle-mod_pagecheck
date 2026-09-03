@@ -31,7 +31,7 @@ use mod_pagecheck\local\submission_manager;
 
 $id = required_param('id', PARAM_INT);
 
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'pagecheck');
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'pagecheck');
 $pagecheck = $DB->get_record('pagecheck', ['id' => $cm->instance], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -43,16 +43,26 @@ $rules = $manager->get_rules($USER->id);
 $viewurl = new moodle_url('/mod/pagecheck/view.php', ['id' => $cm->id]);
 
 if (!$manager->can_edit($USER->id)) {
-    redirect($viewurl, get_string('errorcannotedit', 'mod_pagecheck'), null,
-        \core\output\notification::NOTIFY_ERROR);
+    redirect(
+        $viewurl,
+        get_string('errorcannotedit', 'mod_pagecheck'),
+        null,
+        \core\output\notification::NOTIFY_ERROR
+    );
 }
 
 $submission = $manager->get_submission($USER->id, true);
 $fileoptions = $manager->get_filemanager_options($rules);
 
 $draftitemid = file_get_submitted_draft_itemid('files');
-file_prepare_draft_area($draftitemid, $context->id, 'mod_pagecheck',
-    PAGECHECK_FILEAREA_SUBMISSION, $submission->id, $fileoptions);
+file_prepare_draft_area(
+    $draftitemid,
+    $context->id,
+    'mod_pagecheck',
+    PAGECHECK_FILEAREA_SUBMISSION,
+    $submission->id,
+    $fileoptions
+);
 
 $PAGE->set_url('/mod/pagecheck/edit.php', ['id' => $cm->id]);
 $PAGE->set_title(format_string($pagecheck->name));
@@ -79,8 +89,12 @@ if ($data = $form->get_data()) {
     ]);
     $event->trigger();
 
-    redirect($viewurl, get_string('filessaved', 'mod_pagecheck'), null,
-        \core\output\notification::NOTIFY_SUCCESS);
+    redirect(
+        $viewurl,
+        get_string('filessaved', 'mod_pagecheck'),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 
 // The browser checks what it can before the upload finishes; the server checks everything again

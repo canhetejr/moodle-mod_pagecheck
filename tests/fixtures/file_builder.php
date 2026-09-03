@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\tests\fixtures;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Writes small, valid documents on the fly.
  *
@@ -34,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * ask for exactly the document it needs: seven pages, no text layer, a blank page in the middle.
  */
 class file_builder {
-
     /**
      * Write a PDF with a valid cross reference table.
      *
@@ -148,8 +145,12 @@ class file_builder {
      * @return string the path that was written
      */
     public static function docx(string $path, $pages): string {
-        return self::ooxml($path, 'Pages', $pages,
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        return self::ooxml(
+            $path,
+            'Pages',
+            $pages,
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        );
     }
 
     /**
@@ -160,8 +161,12 @@ class file_builder {
      * @return string the path that was written
      */
     public static function pptx(string $path, $slides): string {
-        return self::ooxml($path, 'Slides', $slides,
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+        return self::ooxml(
+            $path,
+            'Slides',
+            $slides,
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        );
     }
 
     /**
@@ -177,17 +182,21 @@ class file_builder {
         $zip = new \ZipArchive();
         $zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
-        $zip->addFromString('[Content_Types].xml',
+        $zip->addFromString(
+            '[Content_Types].xml',
             '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
             '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' .
-            '<Default Extension="xml" ContentType="' . $contenttype . '"/></Types>');
+            '<Default Extension="xml" ContentType="' . $contenttype . '"/></Types>'
+        );
 
         if ($count !== null) {
-            $zip->addFromString('docProps/app.xml',
+            $zip->addFromString(
+                'docProps/app.xml',
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
                 '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">' .
                 '<' . $element . '>' . (int) $count . '</' . $element . '>' .
-                '</Properties>');
+                '</Properties>'
+            );
         }
 
         $zip->close();

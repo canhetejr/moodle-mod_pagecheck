@@ -30,8 +30,6 @@ use mod_pagecheck\local\issue;
 use mod_pagecheck\local\rules;
 use mod_pagecheck\local\submission_manager;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Turns the state of a submission into what the student reads.
  *
@@ -40,7 +38,6 @@ defined('MOODLE_INTERNAL') || die();
  * without having to read a table.
  */
 class renderer extends \plugin_renderer_base {
-
     /** @var string Everything is within the rules. */
     const STATE_OK = 'ok';
 
@@ -86,8 +83,14 @@ class renderer extends \plugin_renderer_base {
      * @param bool $graded whether this student already has a grade or a comment
      * @return string HTML
      */
-    public function submission_status(submission_manager $manager, $submission, rules $rules,
-            array $results, array $issues = [], bool $graded = false): string {
+    public function submission_status(
+        submission_manager $manager,
+        $submission,
+        rules $rules,
+        array $results,
+        array $issues = [],
+        bool $graded = false
+    ): string {
         $state = submission_manager::furthest_state($submission, $graded);
 
         $context = [
@@ -194,7 +197,7 @@ class renderer extends \plugin_renderer_base {
      * @return string HTML
      */
     public function grading_navigation($cm, array $neighbours, string $filter, int $page): string {
-        $link = function($userid, $label) use ($cm, $filter, $page) {
+        $link = function ($userid, $label) use ($cm, $filter, $page) {
             if ($userid === null) {
                 return \html_writer::span($label, 'pagecheck-nav__link is-disabled');
             }
@@ -295,8 +298,11 @@ class renderer extends \plugin_renderer_base {
 
         $feedback = '';
         if (trim((string) $record->feedback) !== '') {
-            $feedback = format_text($record->feedback, (int) $record->feedbackformat,
-                ['context' => $context]);
+            $feedback = format_text(
+                $record->feedback,
+                (int) $record->feedbackformat,
+                ['context' => $context]
+            );
         }
 
         return $this->render_from_template('mod_pagecheck/grade_panel', [
@@ -399,12 +405,16 @@ class renderer extends \plugin_renderer_base {
         // above the middle of the bar saying what the limits are.
         $meter['ticks'] = [];
         if ($min > 0) {
-            $meter['ticks'][] = $this->tick(($min / $scale) * 100,
-                get_string('minimumshort', 'mod_pagecheck', $min));
+            $meter['ticks'][] = $this->tick(
+                ($min / $scale) * 100,
+                get_string('minimumshort', 'mod_pagecheck', $min)
+            );
         }
         if ($max > 0) {
-            $meter['ticks'][] = $this->tick(($max / $scale) * 100,
-                get_string('maximumshort', 'mod_pagecheck', $max));
+            $meter['ticks'][] = $this->tick(
+                ($max / $scale) * 100,
+                get_string('maximumshort', 'mod_pagecheck', $max)
+            );
         }
 
         if ($min > 0 && $pages < $min) {
@@ -417,7 +427,7 @@ class renderer extends \plugin_renderer_base {
             $meter['state'] = self::STATE_WARN;
         }
 
-        // "Warn only" never paints a refusal the activity is not going to make.
+        // Warning only never paints a refusal the activity is not going to make.
         if ($meter['state'] === self::STATE_ERROR && !issue::has_errors($issues)) {
             $meter['state'] = self::STATE_WARN;
         }
@@ -573,8 +583,11 @@ class renderer extends \plugin_renderer_base {
         $rows[] = [
             'label' => get_string('maxfiles', 'mod_pagecheck'),
             'value' => $rules->minfiles > 0
-                ? get_string('filesbetween', 'mod_pagecheck',
-                    (object) ['min' => $rules->minfiles, 'max' => $rules->maxfiles])
+                ? get_string(
+                    'filesbetween',
+                    'mod_pagecheck',
+                    (object) ['min' => $rules->minfiles, 'max' => $rules->maxfiles]
+                )
                 : $rules->maxfiles,
         ];
 

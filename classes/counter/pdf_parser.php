@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\counter;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Reads just enough of the PDF file structure to answer three questions:
  * how many pages, is there a text layer, and which pages are blank.
@@ -37,7 +35,6 @@ defined('MOODLE_INTERNAL') || die();
  * guess, rather than return a number that happens to be wrong.
  */
 class pdf_parser {
-
     /** @var int Never load more than this many bytes into memory. */
     const MAX_BYTES = 104857600;
 
@@ -174,9 +171,11 @@ class pdf_parser {
                 continue;
             }
             $analysed++;
-            if (!$this->content_has_text($content)
+            if (
+                !$this->content_has_text($content)
                     && !preg_match('/(^|[\s\]>])(Do|BI)[\s\/]/', $content)
-                    && !preg_match('/(^|\s)(S|s|f|F|B|b|f\*|B\*|b\*)\s/', $content)) {
+                    && !preg_match('/(^|\s)(S|s|f|F|B|b|f\*|B\*|b\*)\s/', $content)
+            ) {
                 $blank++;
             }
         }
@@ -219,8 +218,13 @@ class pdf_parser {
      * @return array|null [width, height], or null when there is no media box to be found
      */
     protected function find_media_box(string $body, array $objects, int $depth) {
-        if (preg_match('/\/MediaBox\s*\[\s*([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s*\]/',
-                $body, $matches)) {
+        if (
+            preg_match(
+                '/\/MediaBox\s*\[\s*([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s*\]/',
+                $body,
+                $matches
+            )
+        ) {
             $width = abs((float) $matches[3] - (float) $matches[1]);
             $height = abs((float) $matches[4] - (float) $matches[2]);
             if ($width > 0 && $height > 0) {

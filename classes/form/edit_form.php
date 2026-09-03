@@ -26,8 +26,6 @@ namespace mod_pagecheck\form;
 
 use mod_pagecheck\local\rules;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Attach files to an attempt.
  *
@@ -36,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * them, including the page count, once the files have been saved.
  */
 class edit_form extends \moodleform {
-
     /**
      * Build the form.
      *
@@ -56,13 +53,22 @@ class edit_form extends \moodleform {
             'id' => 'pagecheck-client-issues',
         ]));
 
-        $mform->addElement('filemanager', 'files',
-            get_string('submissionfiles', 'mod_pagecheck'), null, $options);
+        $mform->addElement(
+            'filemanager',
+            'files',
+            get_string('submissionfiles', 'mod_pagecheck'),
+            null,
+            $options
+        );
         $mform->addHelpButton('files', 'submissionfiles', 'mod_pagecheck');
 
         if ($rules->requiresubmissionstatement) {
-            $mform->addElement('checkbox', 'submissionstatement', '',
-                get_string('submissionstatement', 'mod_pagecheck'));
+            $mform->addElement(
+                'checkbox',
+                'submissionstatement',
+                '',
+                get_string('submissionstatement', 'mod_pagecheck')
+            );
             $mform->addRule('submissionstatement', get_string('required'), 'required', null, 'client');
         }
 

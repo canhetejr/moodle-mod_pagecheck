@@ -30,8 +30,6 @@ use mod_pagecheck\local\issue;
 use mod_pagecheck\local\rules;
 use mod_pagecheck\local\validator;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Tests for the submission validator.
  *
@@ -40,7 +38,6 @@ defined('MOODLE_INTERNAL') || die();
  * @covers \mod_pagecheck\local\issue
  */
 class validator_test extends \advanced_testcase {
-
     /**
      * A counted file, described in one line.
      *
@@ -90,7 +87,7 @@ class validator_test extends \advanced_testcase {
      * @return string[]
      */
     protected function codes(array $issues): array {
-        return array_map(function(issue $issue) {
+        return array_map(function (issue $issue) {
             return $issue->code;
         }, $issues);
     }
@@ -238,12 +235,18 @@ class validator_test extends \advanced_testcase {
         $file = $this->file('report.docx', null);
         $base = ['allowedextensions' => ['docx'], 'minpages' => 5];
 
-        $warn = $validator->validate([$file],
-            $this->rules($base + ['unknownpolicy' => rules::UNKNOWN_WARN]));
-        $accept = $validator->validate([$file],
-            $this->rules($base + ['unknownpolicy' => rules::UNKNOWN_ACCEPT]));
-        $reject = $validator->validate([$file],
-            $this->rules($base + ['unknownpolicy' => rules::UNKNOWN_REJECT]));
+        $warn = $validator->validate(
+            [$file],
+            $this->rules($base + ['unknownpolicy' => rules::UNKNOWN_WARN])
+        );
+        $accept = $validator->validate(
+            [$file],
+            $this->rules($base + ['unknownpolicy' => rules::UNKNOWN_ACCEPT])
+        );
+        $reject = $validator->validate(
+            [$file],
+            $this->rules($base + ['unknownpolicy' => rules::UNKNOWN_REJECT])
+        );
 
         $this->assertSame(['unknownpagecount'], $this->codes($warn));
         $this->assertFalse($warn[0]->is_error());
@@ -297,10 +300,14 @@ class validator_test extends \advanced_testcase {
         $validator = new validator();
         $file = $this->file('padded.pdf', 10, ['blankpages' => 3]);
 
-        $tolerated = $validator->validate([$file],
-            $this->rules(['rejectblankpages' => true, 'blankpagetolerance' => 3]));
-        $reported = $validator->validate([$file],
-            $this->rules(['rejectblankpages' => true, 'blankpagetolerance' => 1]));
+        $tolerated = $validator->validate(
+            [$file],
+            $this->rules(['rejectblankpages' => true, 'blankpagetolerance' => 3])
+        );
+        $reported = $validator->validate(
+            [$file],
+            $this->rules(['rejectblankpages' => true, 'blankpagetolerance' => 1])
+        );
 
         $this->assertSame([], $this->codes($tolerated));
         $this->assertSame(['blankpages'], $this->codes($reported));
@@ -328,15 +335,26 @@ class validator_test extends \advanced_testcase {
         $now = time();
         $file = [$this->file('report.pdf', 7)];
 
-        $early = $validator->validate($file,
-            $this->rules(['allowsubmissionsfromdate' => $now + DAYSECS]), ['time' => $now]);
-        $late = $validator->validate($file,
-            $this->rules(['duedate' => $now - DAYSECS]), ['time' => $now]);
-        $closed = $validator->validate($file,
+        $early = $validator->validate(
+            $file,
+            $this->rules(['allowsubmissionsfromdate' => $now + DAYSECS]),
+            ['time' => $now]
+        );
+        $late = $validator->validate(
+            $file,
+            $this->rules(['duedate' => $now - DAYSECS]),
+            ['time' => $now]
+        );
+        $closed = $validator->validate(
+            $file,
             $this->rules(['duedate' => $now - DAYSECS, 'cutoffdate' => $now - HOURSECS]),
-            ['time' => $now]);
-        $blocked = $validator->validate($file,
-            $this->rules(['duedate' => $now - DAYSECS, 'blockafterdue' => true]), ['time' => $now]);
+            ['time' => $now]
+        );
+        $blocked = $validator->validate(
+            $file,
+            $this->rules(['duedate' => $now - DAYSECS, 'blockafterdue' => true]),
+            ['time' => $now]
+        );
 
         $this->assertSame(['notopenyet'], $this->codes($early));
         $this->assertTrue($early[0]->is_error());
@@ -376,8 +394,10 @@ class validator_test extends \advanced_testcase {
 
         $required = $validator->validate([$letter], $this->rules(['pagesize' => 'a4']));
         $relaxed = $validator->validate([$letter], $this->rules(['pagesize' => page_size::ANY]));
-        $matching = $validator->validate([$this->file('report.pdf', 5, ['pagesize' => 'a4'])],
-            $this->rules(['pagesize' => 'a4']));
+        $matching = $validator->validate(
+            [$this->file('report.pdf', 5, ['pagesize' => 'a4'])],
+            $this->rules(['pagesize' => 'a4'])
+        );
 
         $this->assertSame(['badpagesize'], $this->codes($required));
         $this->assertSame([], $this->codes($relaxed));
@@ -408,10 +428,14 @@ class validator_test extends \advanced_testcase {
         $files = [$this->file('a.pdf', 7), $this->file('b.pdf', 2)];
         $base = ['minpages' => 5, 'maxpages' => 10];
 
-        $perfile = $validator->validate($files,
-            $this->rules($base + ['countmode' => rules::COUNT_PER_FILE]));
-        $total = $validator->validate($files,
-            $this->rules($base + ['countmode' => rules::COUNT_TOTAL]));
+        $perfile = $validator->validate(
+            $files,
+            $this->rules($base + ['countmode' => rules::COUNT_PER_FILE])
+        );
+        $total = $validator->validate(
+            $files,
+            $this->rules($base + ['countmode' => rules::COUNT_TOTAL])
+        );
 
         // One short file is reported once, and named.
         $this->assertSame(['toofewpages'], $this->codes($perfile));
@@ -430,15 +454,21 @@ class validator_test extends \advanced_testcase {
         $rules = $this->rules(['filenamepattern' => 'TCC_*.pdf']);
 
         $this->assertSame([], $this->codes($validator->validate(
-            [$this->file('TCC_Ana.pdf', 3)], $rules)));
+            [$this->file('TCC_Ana.pdf', 3)],
+            $rules
+        )));
         $this->assertSame(['badfilename'], $this->codes($validator->validate(
-            [$this->file('trabalho.pdf', 3)], $rules)));
+            [$this->file('trabalho.pdf', 3)],
+            $rules
+        )));
         // The dot is a dot, not "any character".
         $this->assertSame(['badfilename'], $this->codes($validator->validate(
-            [$this->file('TCC_AnaXpdf', 3)], $this->rules([
+            [$this->file('TCC_AnaXpdf', 3)],
+            $this->rules([
                 'filenamepattern' => 'TCC_*.pdf',
                 'allowedextensions' => [],
-            ]))));
+            ])
+        )));
     }
 
     /**
@@ -496,10 +526,16 @@ class validator_test extends \advanced_testcase {
         $rules = $this->rules(['maxattempts' => 1]);
 
         $looking = $validator->validate($file, $rules, ['attemptsused' => 1]);
-        $sending = $validator->validate($file, $rules,
-            ['attemptsused' => 1, 'forsubmission' => true]);
-        $sparelef = $validator->validate($file, $rules,
-            ['attemptsused' => 0, 'forsubmission' => true]);
+        $sending = $validator->validate(
+            $file,
+            $rules,
+            ['attemptsused' => 1, 'forsubmission' => true]
+        );
+        $sparelef = $validator->validate(
+            $file,
+            $rules,
+            ['attemptsused' => 0, 'forsubmission' => true]
+        );
 
         $this->assertSame([], $this->codes($looking));
         $this->assertSame(['noattemptsleft'], $this->codes($sending));

@@ -24,8 +24,6 @@
 
 namespace mod_pagecheck\counter;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * A page counter knows how to read one family of file formats.
  *
@@ -33,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * unit tested against fixture files without going through the Moodle file API.
  */
 interface counter_interface {
-
     /**
      * Whether this counter can handle the given file.
      *

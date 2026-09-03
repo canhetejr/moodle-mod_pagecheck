@@ -24,13 +24,10 @@
 
 namespace mod_pagecheck\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Fired when a user opens the activity.
  */
 class course_module_viewed extends \core\event\course_module_viewed {
-
     /**
      * Set the table this event refers to.
      *
