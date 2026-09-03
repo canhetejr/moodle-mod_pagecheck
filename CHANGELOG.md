@@ -3,6 +3,18 @@
 All notable changes to mod_pagecheck are recorded here. The plugin follows
 [semantic versioning](https://semver.org/) for its release names.
 
+## [0.4.0] - 2026-09-09
+
+First release published to the Moodle plugins directory.
+
+### Changed
+- Maturity raised from alpha to beta: the whole flow has been exercised on a live Moodle 4.x
+  site, from configuring the activity through submitting, counting, grading and reading the grade
+  back. The automated test suite has not yet run in CI, which is why this is beta and not stable.
+
+### Added
+- The GNU GPL v3 licence text, a changelog, and the description used for the directory listing.
+
 ## [0.3.3] - 2026-09-08
 
 ### Fixed
