@@ -57,39 +57,39 @@ jobs:
 
       - name: PHP lint
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci phplint
+        run: moodle-plugin-ci phplint ./plugin
 
       - name: Moodle code style
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci phpcs --max-warnings 0
+        run: moodle-plugin-ci phpcs --max-warnings 0 ./plugin
 
       - name: PHPDoc
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci phpdoc --max-warnings 0
+        run: moodle-plugin-ci phpdoc --max-warnings 0 ./plugin
 
       - name: Validate the database definition and language files
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci validate
+        run: moodle-plugin-ci validate ./plugin
 
       - name: Check the database upgrade path
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci savepoints
+        run: moodle-plugin-ci savepoints ./plugin
 
       - name: Mustache templates
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci mustache
+        run: moodle-plugin-ci mustache ./plugin
 
       - name: Rebuild the AMD modules
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci grunt --max-lint-warnings 0
+        run: moodle-plugin-ci grunt --max-lint-warnings 0 ./plugin
 
       - name: PHPUnit
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci phpunit --fail-on-warning
+        run: moodle-plugin-ci phpunit --fail-on-warning ./plugin
 
       - name: Behat
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci behat --profile chrome
+        run: moodle-plugin-ci behat --profile chrome ./plugin
 
   package:
     name: Build the installable ZIP
