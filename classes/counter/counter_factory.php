@@ -80,6 +80,7 @@ class counter_factory {
             $result->filename = $filename;
             $result->filesize = (int) $file->get_filesize();
             $result->mimetype = $mimetype;
+            $result->contenthash = (string) $file->get_contenthash();
             return $result;
         }
 
@@ -100,6 +101,7 @@ class counter_factory {
         $result->filename = $filename;
         $result->filesize = (int) $file->get_filesize();
         $result->mimetype = $mimetype;
+        $result->contenthash = (string) $file->get_contenthash();
 
         return $result;
     }

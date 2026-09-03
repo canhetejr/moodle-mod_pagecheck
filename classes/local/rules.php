@@ -51,6 +51,12 @@ class rules {
     /** @var string Broken restrictions block the submission. */
     const STRICTNESS_BLOCK = 'block';
 
+    /** @var string The page range applies to every file added together. */
+    const COUNT_TOTAL = 'total';
+
+    /** @var string The page range applies to each file on its own. */
+    const COUNT_PER_FILE = 'perfile';
+
     /** @var array The columns an override may replace. */
     const OVERRIDABLE = [
         'allowsubmissionsfromdate',
@@ -111,6 +117,21 @@ class rules {
 
     /** @var string One of the STRICTNESS_* constants. */
     public $strictness = self::STRICTNESS_BLOCK;
+
+    /** @var string Required paper size, a page_size key, or page_size::ANY. */
+    public $pagesize = \mod_pagecheck\counter\page_size::ANY;
+
+    /** @var string Whether the page range applies to the whole submission or to each file. */
+    public $countmode = self::COUNT_TOTAL;
+
+    /** @var string Pattern every file name must match, with * and ? as wildcards. */
+    public $filenamepattern = '';
+
+    /** @var bool Whether the same file attached twice is refused. */
+    public $rejectduplicates = false;
+
+    /** @var int Minimum number of files, 0 for no minimum. */
+    public $minfiles = 0;
 
     /** @var bool Whether the student has to tick the submission statement. */
     public $requiresubmissionstatement = false;
@@ -197,6 +218,14 @@ class rules {
         $rules->unknownpolicy = (string) $pagecheck->unknownpolicy;
         $rules->strictness = (string) $pagecheck->strictness;
         $rules->requiresubmissionstatement = !empty($pagecheck->requiresubmissionstatement);
+        $rules->pagesize = isset($pagecheck->pagesize)
+            ? (string) $pagecheck->pagesize : \mod_pagecheck\counter\page_size::ANY;
+        $rules->countmode = isset($pagecheck->countmode)
+            ? (string) $pagecheck->countmode : self::COUNT_TOTAL;
+        $rules->filenamepattern = isset($pagecheck->filenamepattern)
+            ? trim((string) $pagecheck->filenamepattern) : '';
+        $rules->rejectduplicates = !empty($pagecheck->rejectduplicates);
+        $rules->minfiles = isset($pagecheck->minfiles) ? (int) $pagecheck->minfiles : 0;
 
         return $rules;
     }
@@ -231,6 +260,27 @@ class rules {
             }
         }
         return array_values($parsed);
+    }
+
+    /**
+     * Whether a file name is acceptable.
+     *
+     * The pattern is written the way a person expects a file name pattern to work, with * and ?
+     * as wildcards, rather than as a regular expression: a teacher writing "TCC_*.pdf" should not
+     * have to know what a dot means to a regex engine.
+     *
+     * @param string $filename the name to test
+     * @return bool true when there is no pattern, or when the name matches it
+     */
+    public function filename_matches(string $filename): bool {
+        if ($this->filenamepattern === '') {
+            return true;
+        }
+
+        $pattern = preg_quote($this->filenamepattern, '/');
+        $pattern = str_replace(['\\*', '\\?'], ['.*', '.'], $pattern);
+
+        return (bool) preg_match('/^' . $pattern . '$/iu', $filename);
     }
 
     /**

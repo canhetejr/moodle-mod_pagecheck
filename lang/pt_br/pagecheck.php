@@ -265,3 +265,47 @@ $string['privacy:metadata:overrides:duedate'] = 'A data de entrega que substitui
 $string['privacy:metadata:overrides:cutoffdate'] = 'A data limite que substitui a da atividade.';
 $string['privacy:metadata:overrides:maxattempts'] = 'O número de tentativas que substitui o da atividade.';
 $string['privacy:metadata:filepurpose'] = 'Os arquivos que o aluno anexou a um envio.';
+
+// Paper size.
+$string['pagesize'] = 'Tamanho de página exigido';
+$string['pagesize_help'] = 'Recusa um PDF cujas páginas não estejam no tamanho em que o trabalho deve ser entregue. O tamanho é lido da própria página, então um documento exportado no papel errado é pego aqui, e não na hora de imprimir. Não é possível verificar em .docx e .pptx.';
+$string['pagesize_any'] = 'Qualquer tamanho';
+$string['pagesize_a4'] = 'A4';
+$string['pagesize_a3'] = 'A3';
+$string['pagesize_a5'] = 'A5';
+$string['pagesize_letter'] = 'Carta';
+$string['pagesize_legal'] = 'Ofício';
+$string['pagesize_mixed'] = 'Tamanhos misturados';
+$string['pagesize_unknown'] = 'Não reconhecido';
+
+// Counting mode and further file restrictions.
+$string['countmode'] = 'Aplicar o intervalo de páginas a';
+$string['countmode_help'] = 'Se o mínimo e o máximo de páginas descrevem o envio inteiro ou cada arquivo anexado separadamente. Com apenas um arquivo permitido, as duas opções dão no mesmo.';
+$string['countmode_total'] = 'O envio inteiro';
+$string['countmode_perfile'] = 'Cada arquivo separadamente';
+$string['minfiles'] = 'Número mínimo de arquivos';
+$string['minfiles_help'] = 'Quantos arquivos o aluno precisa anexar antes de poder enviar o trabalho para avaliação.';
+$string['nominimum'] = 'Sem mínimo';
+$string['filenamepattern'] = 'Nome de arquivo exigido';
+$string['filenamepattern_help'] = 'Um padrão que todo arquivo anexado precisa seguir, útil quando os trabalhos são organizados pelo nome. Use * para qualquer sequência de caracteres e ? para um único, por exemplo <code>TCC_*.pdf</code>. Deixe vazio para aceitar qualquer nome.';
+$string['rejectduplicates'] = 'Recusar o mesmo arquivo anexado duas vezes';
+$string['rejectduplicates_help'] = 'Compara o conteúdo dos arquivos anexados, então o mesmo documento enviado com dois nomes também é pego.';
+
+// Issues for the new checks.
+$string['issue_badpagesize'] = 'as páginas estão em {$a->found}, e o exigido é {$a->expected}.';
+$string['issue_badfilename'] = 'o nome do arquivo não segue o padrão exigido ({$a}).';
+$string['issue_toofewfiles'] = 'foram anexados {$a->count} arquivos, e são exigidos pelo menos {$a->min}.';
+$string['issue_duplicatefile'] = 'este é o mesmo arquivo que {$a}, anexado duas vezes.';
+
+$string['errorminfilesabovemax'] = 'O número mínimo de arquivos não pode ser maior que o máximo.';
+$string['errorpatternnowildcard'] = 'Um padrão sem curinga só corresponde a um nome exato. Acrescente * ou ? , ou uma extensão como .pdf.';
+$string['papersize'] = 'Tamanho da página';
+
+// The page count meter.
+$string['nofilesyet'] = 'Nada anexado ainda. Use o botão abaixo para adicionar seu trabalho.';
+$string['meterinrange'] = 'Dentro do intervalo exigido.';
+$string['meternorange'] = 'Esta atividade não define limite de páginas.';
+$string['metershort'] = 'Faltam {$a} páginas.';
+$string['meterover'] = '{$a} páginas acima do limite.';
+$string['metercannotcount'] = 'Não foi possível contar as páginas deste envio.';
+$string['filesbetween'] = 'Entre {$a->min} e {$a->max}';

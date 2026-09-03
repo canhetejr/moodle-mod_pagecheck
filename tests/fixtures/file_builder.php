@@ -43,6 +43,9 @@ class file_builder {
      * @param array $options 'text' (default true) to draw text on every page,
      *                       'blank' number of trailing pages that paint nothing,
      *                       'compress' to deflate the content streams, as real writers do,
+     *                       'size' as [width, height] in points, A4 by default,
+     *                       'lastsize' as [width, height] for the final page only, to build a
+     *                       document of mixed paper sizes,
      *                       'encrypted' to reference an encryption dictionary in the trailer
      * @return string the path that was written
      */
@@ -50,6 +53,8 @@ class file_builder {
         $withtext = !array_key_exists('text', $options) || $options['text'];
         $blank = isset($options['blank']) ? (int) $options['blank'] : 0;
         $compress = !empty($options['compress']);
+        $size = isset($options['size']) ? $options['size'] : [595.276, 841.89];
+        $lastsize = isset($options['lastsize']) ? $options['lastsize'] : null;
         $encrypted = !empty($options['encrypted']);
 
         // Object 1 is the catalogue, object 2 the page tree, then a page and a content stream
@@ -78,7 +83,9 @@ class file_builder {
                 $stream = "0 0 0 rg 72 72 100 100 re f\n";
             }
 
-            $objects[$pageobj] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] '
+            $box = ($lastsize !== null && $i === $pages - 1) ? $lastsize : $size;
+            $objects[$pageobj] = '<< /Type /Page /Parent 2 0 R '
+                . '/MediaBox [0 0 ' . $box[0] . ' ' . $box[1] . '] '
                 . '/Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> '
                 . '/Contents ' . $contentobj . ' 0 R >>';
             $filter = '';

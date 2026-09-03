@@ -11,8 +11,9 @@ Compatível com **Moodle 4.1 LTS até a série 5.x**.
 
 | Categoria | Restrições |
 |---|---|
-| Páginas | mínimo, máximo, páginas de capa fora da contagem |
-| Arquivos | tipos aceitos, tamanho máximo, quantidade máxima |
+| Páginas | mínimo, máximo, páginas de capa fora da contagem, e se o intervalo vale para o envio inteiro ou para cada arquivo |
+| Papel | tamanho de página exigido (A4, A3, A5, Carta, Ofício), lido da própria página do PDF |
+| Arquivos | tipos aceitos, tamanho máximo, quantidade mínima e máxima, padrão de nome de arquivo, recusar o mesmo arquivo anexado duas vezes |
 | Prazos | abertura, entrega, data limite, recusar atrasados |
 | Tentativas | número máximo de envios, declaração de autoria |
 | Documento | recusar arquivo protegido por senha, exigir texto selecionável, sinalizar páginas em branco |
@@ -27,6 +28,7 @@ exigidos, qualquer que seja essa escolha.
 | Formato | Fonte da contagem | Confiabilidade |
 |---|---|---|
 | PDF | FPDI (já embutido no Moodle); na falha, leitura direta da estrutura do arquivo; opcionalmente Ghostscript | Exata |
+| PDF (tamanho do papel) | `/MediaBox` de cada página | Exata |
 | DOCX / PPTX | `docProps/app.xml` (`<Pages>` / `<Slides>`) | Aproximada — ver limitações |
 | Outros | — | Não contado |
 
@@ -45,6 +47,9 @@ Ghostscript é apenas um último recurso opcional, desligado por padrão.
   procura instruções de desenho de texto: um PDF cujo texto foi convertido em curvas é sinalizado
   mesmo parecendo normal. A segunda considera em branco a página que não desenha texto, imagem nem
   traço. Por isso páginas em branco saem sempre como **aviso**, nunca como recusa.
+- **O tamanho do papel só é verificável em PDF.** Em .docx e .pptx o plugin não tem como medir a
+  página, então essa restrição simplesmente não se aplica a esses formatos — o arquivo não é
+  acusado de estar no tamanho errado por algo que não deu para medir.
 - **Um PDF que guarda seus objetos em fluxos comprimidos** (`/ObjStm`) é contado pelo FPDI, mas não
   é analisado quanto a texto e páginas em branco: nesses casos o plugin informa "desconhecido" em
   vez de responder errado.
@@ -99,6 +104,9 @@ Depois de instalar, crie uma atividade com **mínimo 5** e **máximo 10** págin
 | PDF protegido por senha | recusado (com "Recusar arquivos protegidos por senha" ligado) |
 | DOCX sem contagem gravada | tratado conforme "Contagem de páginas desconhecida" |
 | Envio após a data limite | recusado |
+| PDF em Carta com A4 exigido | recusado, com aviso já na tela de upload |
+| Arquivo fora do padrão de nome | recusado |
+| O mesmo PDF anexado duas vezes | recusado quando a opção está ligada |
 
 Nenhuma dessas verificações depende do navegador: desligar o JavaScript muda apenas *quando* o
 aluno é avisado, nunca *o que* é aceito.

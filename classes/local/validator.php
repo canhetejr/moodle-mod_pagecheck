@@ -25,6 +25,7 @@
 namespace mod_pagecheck\local;
 
 use mod_pagecheck\counter\count_result;
+use mod_pagecheck\counter\page_size;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -54,6 +55,7 @@ class validator {
         'notextlayer',
         'blankpages',
         'encrypted',
+        'badpagesize',
     ];
 
     /**
@@ -126,6 +128,17 @@ class validator {
             return [new issue('nofiles', issue::LEVEL_ERROR)];
         }
 
+        if ($rules->minfiles > 0 && count($results) < $rules->minfiles) {
+            $issues[] = new issue('toofewfiles', issue::LEVEL_ERROR, (object) [
+                'count' => count($results),
+                'min' => $rules->minfiles,
+            ]);
+        }
+
+        if ($rules->rejectduplicates) {
+            $issues = array_merge($issues, $this->check_duplicates($results));
+        }
+
         if (count($results) > $rules->maxfiles) {
             $issues[] = new issue('toomanyfiles', issue::LEVEL_ERROR, (object) [
                 'count' => count($results),
@@ -171,6 +184,23 @@ class validator {
                 }
             }
 
+            if (!$rules->filename_matches($filename)) {
+                $issues[] = new issue('badfilename', issue::LEVEL_ERROR,
+                    $rules->filenamepattern, $filename);
+            }
+
+            if ($rules->pagesize !== page_size::ANY && $result->pagesize !== null
+                    && $result->pagesize !== $rules->pagesize) {
+                $issues[] = new issue('badpagesize', issue::LEVEL_ERROR, (object) [
+                    'found' => page_size::get_name($result->pagesize),
+                    'expected' => page_size::get_name($rules->pagesize),
+                ], $filename);
+            }
+
+            if ($rules->countmode === rules::COUNT_PER_FILE && $result->has_page_count()) {
+                $issues = array_merge($issues, $this->check_one_file_pages($result, $rules));
+            }
+
             if ($rules->requiretextlayer && $result->hastext === false) {
                 $issues[] = new issue('notextlayer', issue::LEVEL_ERROR, null, $filename);
             }
@@ -188,6 +218,61 @@ class validator {
     }
 
     /**
+     * Find files attached more than once.
+     *
+     * Two files with the same content hash are byte for byte the same document, whatever they
+     * were named, which is nearly always a student attaching the same work twice by mistake.
+     *
+     * @param count_result[] $results one result per submitted file
+     * @return issue[]
+     */
+    protected function check_duplicates(array $results): array {
+        $seen = [];
+        $issues = [];
+
+        foreach ($results as $result) {
+            if ($result->contenthash === '') {
+                continue;
+            }
+            if (isset($seen[$result->contenthash])) {
+                $issues[] = new issue('duplicatefile', issue::LEVEL_ERROR,
+                    $seen[$result->contenthash], $result->filename);
+                continue;
+            }
+            $seen[$result->contenthash] = $result->filename;
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Check one file against the page range, for activities that count each file separately.
+     *
+     * @param count_result $result the counted file
+     * @param rules $rules the effective restrictions
+     * @return issue[]
+     */
+    protected function check_one_file_pages(count_result $result, rules $rules): array {
+        $pages = max(0, $result->pages - $rules->countcover);
+        $issues = [];
+
+        if ($rules->minpages > 0 && $pages < $rules->minpages) {
+            $issues[] = new issue('toofewpages', issue::LEVEL_ERROR, (object) [
+                'count' => $pages,
+                'min' => $rules->minpages,
+            ], $result->filename);
+        }
+        if ($rules->maxpages > 0 && $pages > $rules->maxpages) {
+            $issues[] = new issue('toomanypages', issue::LEVEL_ERROR, (object) [
+                'count' => $pages,
+                'max' => $rules->maxpages,
+            ], $result->filename);
+        }
+
+        return $issues;
+    }
+
+    /**
      * Check the page count of the submission as a whole.
      *
      * @param count_result[] $results one result per submitted file
@@ -196,6 +281,11 @@ class validator {
      */
     protected function check_total_pages(array $results, rules $rules): array {
         if ($rules->minpages <= 0 && $rules->maxpages <= 0) {
+            return [];
+        }
+        if ($rules->countmode === rules::COUNT_PER_FILE) {
+            // Each file was already checked on its own, so checking the total too would report
+            // the same problem twice with two different numbers.
             return [];
         }
 

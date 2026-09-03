@@ -265,3 +265,47 @@ $string['privacy:metadata:overrides:duedate'] = 'The due date that replaces the 
 $string['privacy:metadata:overrides:cutoffdate'] = 'The cut off date that replaces the activity one.';
 $string['privacy:metadata:overrides:maxattempts'] = 'The attempt allowance that replaces the activity one.';
 $string['privacy:metadata:filepurpose'] = 'The files a student attached to a submission.';
+
+// Paper size.
+$string['pagesize'] = 'Required paper size';
+$string['pagesize_help'] = 'Refuses a PDF whose pages are not the size the work is meant to be on. The size is read from the page itself, so a document exported to the wrong paper is caught here rather than at the printer. It cannot be checked for .docx and .pptx.';
+$string['pagesize_any'] = 'Any size';
+$string['pagesize_a4'] = 'A4';
+$string['pagesize_a3'] = 'A3';
+$string['pagesize_a5'] = 'A5';
+$string['pagesize_letter'] = 'Letter';
+$string['pagesize_legal'] = 'Legal';
+$string['pagesize_mixed'] = 'Mixed sizes';
+$string['pagesize_unknown'] = 'Unrecognised';
+
+// Counting mode and further file restrictions.
+$string['countmode'] = 'Apply the page range to';
+$string['countmode_help'] = 'Whether the minimum and maximum pages describe the submission as a whole, or each attached file on its own. With one file allowed the two are the same thing.';
+$string['countmode_total'] = 'The whole submission';
+$string['countmode_perfile'] = 'Each file on its own';
+$string['minfiles'] = 'Minimum number of files';
+$string['minfiles_help'] = 'How many files the student has to attach before the work can be sent for grading.';
+$string['nominimum'] = 'No minimum';
+$string['filenamepattern'] = 'Required file name';
+$string['filenamepattern_help'] = 'A pattern every attached file name has to match, useful when work is collected by name. Use * for any run of characters and ? for a single one, for example <code>TCC_*.pdf</code>. Leave empty to accept any name.';
+$string['rejectduplicates'] = 'Refuse the same file attached twice';
+$string['rejectduplicates_help'] = 'Compares the contents of the attached files, so the same document sent under two names is still caught.';
+
+// Issues for the new checks.
+$string['issue_badpagesize'] = 'the pages are {$a->found}, and {$a->expected} is required.';
+$string['issue_badfilename'] = 'the file name does not match the required pattern ({$a}).';
+$string['issue_toofewfiles'] = '{$a->count} files were attached, and at least {$a->min} are required.';
+$string['issue_duplicatefile'] = 'this is the same file as {$a}, attached twice.';
+
+$string['errorminfilesabovemax'] = 'The minimum number of files cannot be above the maximum.';
+$string['errorpatternnowildcard'] = 'A pattern with no wildcard matches only one exact file name. Add * or ? , or an extension such as .pdf.';
+$string['papersize'] = 'Paper size';
+
+// The page count meter.
+$string['nofilesyet'] = 'Nothing attached yet. Use the button below to add your work.';
+$string['meterinrange'] = 'Within the required range.';
+$string['meternorange'] = 'This activity sets no page limit.';
+$string['metershort'] = '{$a} more pages are needed.';
+$string['meterover'] = '{$a} pages over the limit.';
+$string['metercannotcount'] = 'The pages of this submission could not be counted.';
+$string['filesbetween'] = 'Between {$a->min} and {$a->max}';

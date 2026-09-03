@@ -28,6 +28,7 @@ use mod_pagecheck\counter\count_result;
 use mod_pagecheck\counter\counter_factory;
 use mod_pagecheck\counter\ooxml_counter;
 use mod_pagecheck\counter\pdf_counter;
+use mod_pagecheck\counter\page_size;
 use mod_pagecheck\counter\pdf_parser;
 use mod_pagecheck\tests\fixtures\file_builder;
 
@@ -43,6 +44,7 @@ require_once($CFG->dirroot . '/mod/pagecheck/tests/fixtures/file_builder.php');
  * @covers \mod_pagecheck\counter\pdf_counter
  * @covers \mod_pagecheck\counter\ooxml_counter
  * @covers \mod_pagecheck\counter\counter_factory
+ * @covers \mod_pagecheck\counter\page_size
  */
 class counter_test extends \advanced_testcase {
 
@@ -259,6 +261,78 @@ class counter_test extends \advanced_testcase {
 
         $this->assertTrue($result->encrypted);
         $this->assertSame('errorencrypted', $result->error);
+    }
+
+    /**
+     * Documents built on a known paper size, and what they should be called.
+     *
+     * @return array
+     */
+    public function paper_size_provider(): array {
+        return [
+            'a4' => ['a4', [595.276, 841.89]],
+            'a4 landscape' => ['a4', [841.89, 595.276]],
+            'letter' => ['letter', [612, 792]],
+            'a3' => ['a3', [841.89, 1190.55]],
+            'a5' => ['a5', [419.528, 595.276]],
+            'legal' => ['legal', [612, 1008]],
+            'nothing standard' => ['unknown', [500, 700]],
+        ];
+    }
+
+    /**
+     * The paper size is read from the page itself, whichever way round the page is.
+     *
+     * @dataProvider paper_size_provider
+     * @param string $expected the name the size should be given
+     * @param array $size the dimensions the document was built with
+     * @return void
+     */
+    public function test_paper_size(string $expected, array $size): void {
+        $path = file_builder::pdf($this->path('sized.pdf'), 2, ['size' => $size]);
+
+        $result = (new pdf_counter())->count($path);
+
+        $this->assertSame($expected, $result->pagesize);
+    }
+
+    /**
+     * A document whose pages are not all the same size is reported as mixed, not as the first one.
+     *
+     * @return void
+     */
+    public function test_mixed_paper_sizes(): void {
+        $path = file_builder::pdf($this->path('mixed.pdf'), 3, [
+            'size' => [595.276, 841.89],
+            'lastsize' => [612, 792],
+        ]);
+
+        $result = (new pdf_counter())->count($path);
+
+        $this->assertSame(page_size::MIXED, $result->pagesize);
+    }
+
+    /**
+     * A page a few points off nominal is still the size it was meant to be.
+     *
+     * @return void
+     */
+    public function test_paper_size_tolerance(): void {
+        $this->assertSame('a4', page_size::classify(592.3, 839.0));
+        $this->assertSame(page_size::UNKNOWN, page_size::classify(560.0, 800.0));
+    }
+
+    /**
+     * Compressed content streams do not hide the paper size, which lives in the dictionaries.
+     *
+     * @return void
+     */
+    public function test_paper_size_with_compressed_streams(): void {
+        $path = file_builder::pdf($this->path('flate.pdf'), 4, ['compress' => true]);
+
+        $result = (new pdf_counter())->count($path);
+
+        $this->assertSame('a4', $result->pagesize);
     }
 
     /**

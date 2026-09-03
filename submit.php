@@ -117,7 +117,7 @@ if ($issues) {
 }
 
 echo $renderer->submission_status($manager, $submission, $rules,
-    $manager->analyse($submission, $rules));
+    $manager->analyse($submission, $rules), $issues);
 
 $confirmurl = new moodle_url('/mod/pagecheck/submit.php', [
     'id' => $cm->id,

@@ -34,6 +34,14 @@ if ($ADMIN->fulltree) {
         PARAM_TEXT
     ));
 
+    $settings->add(new admin_setting_configselect(
+        'mod_pagecheck/pagesize',
+        get_string('pagesize', 'mod_pagecheck'),
+        get_string('pagesize_help', 'mod_pagecheck'),
+        \mod_pagecheck\counter\page_size::ANY,
+        \mod_pagecheck\counter\page_size::get_menu()
+    ));
+
     $settings->add(new admin_setting_configcheckbox(
         'mod_pagecheck/useghostscript',
         get_string('useghostscript', 'mod_pagecheck'),

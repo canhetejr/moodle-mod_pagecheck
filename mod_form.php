@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
+use mod_pagecheck\counter\page_size;
 use mod_pagecheck\local\rules;
 
 /**
@@ -96,6 +97,22 @@ class mod_pagecheck_mod_form extends moodleform_mod {
             array_combine(range(1, 20), range(1, 20)));
         $mform->setDefault('maxfiles', 1);
 
+        $minfiles = [0 => get_string('nominimum', 'mod_pagecheck')] + array_combine(range(1, 20), range(1, 20));
+        $mform->addElement('select', 'minfiles', get_string('minfiles', 'mod_pagecheck'), $minfiles);
+        $mform->addHelpButton('minfiles', 'minfiles', 'mod_pagecheck');
+        $mform->setDefault('minfiles', 0);
+
+        $mform->addElement('text', 'filenamepattern',
+            get_string('filenamepattern', 'mod_pagecheck'), ['size' => 40]);
+        $mform->setType('filenamepattern', PARAM_TEXT);
+        $mform->addHelpButton('filenamepattern', 'filenamepattern', 'mod_pagecheck');
+        $mform->setDefault('filenamepattern', '');
+
+        $mform->addElement('advcheckbox', 'rejectduplicates',
+            get_string('rejectduplicates', 'mod_pagecheck'));
+        $mform->addHelpButton('rejectduplicates', 'rejectduplicates', 'mod_pagecheck');
+        $mform->setDefault('rejectduplicates', 0);
+
         $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes, 0,
             !empty($config->maxbytes) ? $config->maxbytes : 0);
         $choices[0] = get_string('courseuploadlimit') . ' (' . display_size($COURSE->maxbytes) . ')';
@@ -121,6 +138,19 @@ class mod_pagecheck_mod_form extends moodleform_mod {
         $mform->setType('countcover', PARAM_INT);
         $mform->setDefault('countcover', 0);
         $mform->addHelpButton('countcover', 'countcover', 'mod_pagecheck');
+
+        $mform->addElement('select', 'countmode', get_string('countmode', 'mod_pagecheck'), [
+            rules::COUNT_TOTAL => get_string('countmode_total', 'mod_pagecheck'),
+            rules::COUNT_PER_FILE => get_string('countmode_perfile', 'mod_pagecheck'),
+        ]);
+        $mform->addHelpButton('countmode', 'countmode', 'mod_pagecheck');
+        $mform->setDefault('countmode', rules::COUNT_TOTAL);
+
+        $mform->addElement('select', 'pagesize', get_string('pagesize', 'mod_pagecheck'),
+            page_size::get_menu());
+        $mform->addHelpButton('pagesize', 'pagesize', 'mod_pagecheck');
+        $mform->setDefault('pagesize',
+            !empty($config->pagesize) ? $config->pagesize : page_size::ANY);
 
         $mform->addElement('select', 'strictness', get_string('strictness', 'mod_pagecheck'), [
             rules::STRICTNESS_BLOCK => get_string('strictness_block', 'mod_pagecheck'),
@@ -244,6 +274,20 @@ class mod_pagecheck_mod_form extends moodleform_mod {
         $countcover = (int) ($data['countcover'] ?? 0);
         if ($countcover > 0 && $maxpages > 0 && $countcover >= $maxpages) {
             $errors['countcover'] = get_string('errorcovertoolarge', 'mod_pagecheck');
+        }
+
+        $minfiles = (int) ($data['minfiles'] ?? 0);
+        $maxfiles = (int) ($data['maxfiles'] ?? 1);
+        if ($minfiles > $maxfiles) {
+            $errors['minfiles'] = get_string('errorminfilesabovemax', 'mod_pagecheck');
+        }
+
+        $pattern = trim((string) ($data['filenamepattern'] ?? ''));
+        if ($pattern !== '' && strpos($pattern, '*') === false && strpos($pattern, '?') === false
+                && strpos($pattern, '.') === false) {
+            // A pattern with no wildcard and no extension only ever matches one exact name, which
+            // is almost never what was meant.
+            $errors['filenamepattern'] = get_string('errorpatternnowildcard', 'mod_pagecheck');
         }
 
         if (empty($data['allowedextensions'])) {

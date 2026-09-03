@@ -21,7 +21,8 @@
 
     Rendered on the server when the activity page loads, and again in the browser by
     mod_pagecheck/validator as soon as the student picks a file, so that both say the same thing
-    in the same words.
+    in the same words. The context keys are therefore shared with that JavaScript module and must
+    not be renamed on one side alone.
 
     Context variables required for this template:
     * issues - array of problems, each with a message and an iserror flag
@@ -39,14 +40,13 @@
 }}
 <div class="pagecheck-issues" role="status" aria-live="polite">
     {{#checking}}
-        <div class="alert alert-info" role="alert">
+        <div class="pagecheck-issue pagecheck-issue--info">
             {{#pix}}i/loading_small, core{{/pix}}
             {{#str}}checkingfile, mod_pagecheck{{/str}}
         </div>
     {{/checking}}
     {{#issues}}
-        <div class="alert {{#iserror}}alert-danger{{/iserror}}{{^iserror}}alert-warning{{/iserror}}"
-             role="alert">
+        <div class="pagecheck-issue {{#iserror}}pagecheck-issue--error{{/iserror}}{{^iserror}}pagecheck-issue--warning{{/iserror}}">
             {{message}}
         </div>
     {{/issues}}

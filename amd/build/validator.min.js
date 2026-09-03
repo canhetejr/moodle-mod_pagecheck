@@ -43,6 +43,23 @@ define(['core/templates', 'core/str', 'core/log'], function(Templates, Str, Log)
     /** The activity restrictions, as handed over by edit.php. */
     var config = null;
 
+    /**
+     * The paper sizes this module can name, as [short edge, long edge] in points.
+     *
+     * Kept in step with \mod_pagecheck\counter\page_size on the server; the browser only ever
+     * anticipates that verdict, and disagreeing with it would be worse than staying silent.
+     */
+    var PAPER_SIZES = {
+        a4: [595.276, 841.89],
+        a3: [841.89, 1190.55],
+        a5: [419.528, 595.276],
+        letter: [612, 792],
+        legal: [612, 1008]
+    };
+
+    /** How far from the nominal size a page may be, in points. */
+    var SIZE_TOLERANCE = 5;
+
     /** Where the messages are shown. */
     var REGION = 'pagecheck-client-issues';
 
@@ -127,6 +144,67 @@ define(['core/templates', 'core/str', 'core/log'], function(Templates, Str, Log)
     };
 
     /**
+     * Name the paper size of a document, the way the server would.
+     *
+     * @param {String} text the decoded file content
+     * @return {String|null} a key of PAPER_SIZES, "mixed", or null when nothing could be measured
+     */
+    var readPaperSize = function(text) {
+        var boxes = text.match(/\/MediaBox\s*\[\s*[\d.+-]+\s+[\d.+-]+\s+[\d.+-]+\s+[\d.+-]+\s*\]/g);
+        if (!boxes || !boxes.length) {
+            return null;
+        }
+
+        var names = {};
+        boxes.forEach(function(box) {
+            var numbers = box.match(/[\d.+-]+/g);
+            if (!numbers || numbers.length < 4) {
+                return;
+            }
+            var width = Math.abs(parseFloat(numbers[2]) - parseFloat(numbers[0]));
+            var height = Math.abs(parseFloat(numbers[3]) - parseFloat(numbers[1]));
+            if (!(width > 0) || !(height > 0)) {
+                return;
+            }
+
+            var short = Math.min(width, height);
+            var long = Math.max(width, height);
+            var found = 'unknown';
+            Object.keys(PAPER_SIZES).forEach(function(name) {
+                if (Math.abs(short - PAPER_SIZES[name][0]) <= SIZE_TOLERANCE
+                        && Math.abs(long - PAPER_SIZES[name][1]) <= SIZE_TOLERANCE) {
+                    found = name;
+                }
+            });
+            names[found] = true;
+        });
+
+        var seen = Object.keys(names);
+        if (!seen.length) {
+            return null;
+        }
+        return seen.length > 1 ? 'mixed' : seen[0];
+    };
+
+    /**
+     * Whether a file name matches the pattern the activity requires.
+     *
+     * The pattern uses * and ? the way a person expects of a file name, which is what the server
+     * does too, so the two cannot disagree about a name.
+     *
+     * @param {String} filename the name the student picked
+     * @return {Boolean}
+     */
+    var filenameMatches = function(filename) {
+        if (!config.filenamepattern) {
+            return true;
+        }
+        var escaped = config.filenamepattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+        var pattern = escaped.replace(/\*/g, '.*').replace(/\?/g, '.');
+        return new RegExp('^' + pattern + '$', 'i').test(filename);
+    };
+
+    /**
      * Work out everything that is wrong with one file.
      *
      * @param {File} file the file the student picked
@@ -146,6 +224,10 @@ define(['core/templates', 'core/str', 'core/log'], function(Templates, Str, Log)
             return Promise.resolve(problems);
         }
 
+        if (!filenameMatches(name)) {
+            problems.push({key: 'issue_badfilename', param: config.filenamepattern});
+        }
+
         if (config.maxbytes > 0 && file.size > config.maxbytes) {
             problems.push({
                 key: 'issue_toolarge',
@@ -153,12 +235,31 @@ define(['core/templates', 'core/str', 'core/log'], function(Templates, Str, Log)
             });
         }
 
-        if (extension !== 'pdf' || (config.minpages <= 0 && config.maxpages <= 0)) {
-            // Only a PDF can be counted here. For anything else the server has the last word.
+        var wantspages = config.minpages > 0 || config.maxpages > 0;
+        var wantssize = config.pagesize && config.pagesize !== 'any';
+        if (extension !== 'pdf' || (!wantspages && !wantssize)) {
+            // Only a PDF can be read here. For anything else the server has the last word.
             return Promise.resolve(problems);
         }
 
         return readFile(file).then(function(text) {
+            if (wantssize) {
+                var size = readPaperSize(text);
+                if (size !== null && size !== config.pagesize) {
+                    problems.push({
+                        key: 'issue_badpagesize',
+                        param: {
+                            found: label(size),
+                            expected: label(config.pagesize)
+                        }
+                    });
+                }
+            }
+
+            if (!wantspages) {
+                return problems;
+            }
+
             var pages = countPdfPages(text);
             if (pages === null) {
                 problems.push({key: 'checkonserver', param: null});
@@ -177,6 +278,17 @@ define(['core/templates', 'core/str', 'core/log'], function(Templates, Str, Log)
             problems.push({key: 'checkonserver', param: null});
             return problems;
         });
+    };
+
+    /**
+     * The translated name of a paper size.
+     *
+     * @param {String} name a key of PAPER_SIZES, "mixed" or "unknown"
+     * @return {String}
+     */
+    var label = function(name) {
+        var labels = config.pagesizelabels || {};
+        return labels[name] || name;
     };
 
     /**

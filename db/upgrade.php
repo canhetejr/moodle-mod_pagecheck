@@ -31,6 +31,37 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function xmldb_pagecheck_upgrade($oldversion) {
-    // No upgrade steps yet: the plugin has only ever had one released version.
+    global $DB;
+
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2026090400) {
+
+        // Five further restrictions a teacher can set, and the paper size we detect per file.
+        $table = new xmldb_table('pagecheck');
+
+        $fields = [
+            new xmldb_field('pagesize', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'any', 'strictness'),
+            new xmldb_field('countmode', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'total', 'pagesize'),
+            new xmldb_field('filenamepattern', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '', 'countmode'),
+            new xmldb_field('rejectduplicates', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'filenamepattern'),
+            new xmldb_field('minfiles', XMLDB_TYPE_INTEGER, '5', null, XMLDB_NOTNULL, null, '0', 'rejectduplicates'),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        $table = new xmldb_table('pagecheck_files');
+        $field = new xmldb_field('pagesize', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'countmethod');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026090400, 'pagecheck');
+    }
+
     return true;
 }

@@ -17,74 +17,137 @@
 {{!
     @template mod_pagecheck/submission_status
 
-    What the student sees on the activity page: the restrictions that apply to them, the state of
-    their attempt, and every file with its page count.
+    What the student sees on the activity page: how many pages they have against how many were
+    asked for, the state of the attempt, the rules in force, and every file with its page count.
+
+    The page count leads, because it is the one thing this activity does that the assignment
+    activity does not, and it is the thing a student needs to see without reading a table.
 
     Context variables required for this template:
-    * status - rows describing the state of the attempt
-    * restrictions - rows describing the rules in force
-    * files - the submitted files with their page counts
-    * hasfiles - whether there is at least one file
+    * statuslabel, statusstate - the state of the attempt and which pill to draw
+    * meter - the page count against the required range
+    * facts - dates and other rows about the attempt
+    * restrictions - the rules in force for this student
+    * files, hasfiles - the submitted files with their page counts
+    * emptyimage, emptytext - what to show before anything is attached
 
     Example context (json):
     {
-        "status": [{"label": "Submission status", "value": "Submitted for grading"}],
+        "statuslabel": "Submitted for grading",
+        "statusstate": "ok",
+        "meter": {
+            "show": true, "value": "7", "unit": "pages", "state": "ok",
+            "hasrange": true, "rangetext": "Between 5 and 10", "caption": "Within the range.",
+            "percent": 70, "bandleft": 50, "bandwidth": 50, "scalemin": "0", "scalemax": "10"
+        },
+        "facts": [{"label": "Due date", "value": "1 September 2026"}],
         "restrictions": [{"label": "Pages", "value": "Between 5 and 10"}],
         "hasfiles": true,
+        "emptyimage": "https://example.com/nosubmission.svg",
+        "emptytext": "Nothing attached yet.",
         "files": [
             {"filename": "report.pdf", "url": "https://example.com/report.pdf",
-             "pages": "7", "size": "1.2 MB", "method": "PDF structure", "iserror": false}
+             "pages": "7", "size": "1.2 MB", "method": "PDF page tree",
+             "papersize": "A4", "iserror": false}
         ]
     }
 }}
 <div class="pagecheck-status">
-    <table class="generaltable table table-sm">
-        <caption class="sr-only">{{#str}}submissionstatus, mod_pagecheck{{/str}}</caption>
-        <tbody>
-            {{#status}}
-                <tr>
-                    <th scope="row" class="cell c0">{{label}}</th>
-                    <td class="cell c1">{{{value}}}</td>
-                </tr>
-            {{/status}}
-        </tbody>
-    </table>
 
-    <h3>{{#str}}restrictions, mod_pagecheck{{/str}}</h3>
-    <table class="generaltable table table-sm">
-        <caption class="sr-only">{{#str}}restrictions, mod_pagecheck{{/str}}</caption>
-        <tbody>
-            {{#restrictions}}
-                <tr>
-                    <th scope="row" class="cell c0">{{label}}</th>
-                    <td class="cell c1">{{value}}</td>
-                </tr>
-            {{/restrictions}}
-        </tbody>
-    </table>
+    <div class="pagecheck-panel">
+        <div class="pagecheck-panel__head">
+            <h3 class="pagecheck-panel__title">{{#str}}submissionstatus, mod_pagecheck{{/str}}</h3>
+            <span class="pagecheck-pill pagecheck-pill--{{statusstate}}">{{statuslabel}}</span>
+        </div>
+        <div class="pagecheck-panel__body">
+            {{#meter}}
+                {{#show}}
+                    <div class="pagecheck-hero">
+                        <div class="pagecheck-count pagecheck-count--{{state}}">
+                            <span class="pagecheck-count__value">{{value}}</span>
+                            <span class="pagecheck-count__label">{{unit}}</span>
+                        </div>
+                        <div class="pagecheck-gauge pagecheck-gauge--{{state}}">
+                            {{#hasrange}}
+                                <div class="pagecheck-gauge__scale">
+                                    <span>{{scalemin}}</span>
+                                    <span>{{rangetext}}</span>
+                                    <span>{{scalemax}}</span>
+                                </div>
+                                <div class="pagecheck-gauge__track">
+                                    <div class="pagecheck-gauge__band"
+                                         style="left: {{bandleft}}%; width: {{bandwidth}}%;"></div>
+                                    <div class="pagecheck-gauge__fill" style="width: {{percent}}%;"></div>
+                                </div>
+                            {{/hasrange}}
+                            <p class="pagecheck-gauge__caption">{{caption}}</p>
+                        </div>
+                    </div>
+                {{/show}}
+            {{/meter}}
 
-    {{#hasfiles}}
-        <h3>{{#str}}submittedfiles, mod_pagecheck{{/str}}</h3>
-        <table class="generaltable table table-sm">
-            <caption class="sr-only">{{#str}}submittedfiles, mod_pagecheck{{/str}}</caption>
-            <thead>
-                <tr>
-                    <th scope="col">{{#str}}file, mod_pagecheck{{/str}}</th>
-                    <th scope="col">{{#str}}pages, mod_pagecheck{{/str}}</th>
-                    <th scope="col">{{#str}}size, mod_pagecheck{{/str}}</th>
-                    <th scope="col">{{#str}}countmethod, mod_pagecheck{{/str}}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#files}}
-                    <tr class="{{#iserror}}table-danger{{/iserror}}">
-                        <td><a href="{{url}}">{{filename}}</a></td>
-                        <td>{{pages}}</td>
-                        <td>{{size}}</td>
-                        <td>{{method}}</td>
-                    </tr>
-                {{/files}}
-            </tbody>
-        </table>
-    {{/hasfiles}}
+            {{#hasfacts}}
+                <dl class="pagecheck-facts">
+                    {{#facts}}
+                        <dt>{{label}}</dt>
+                        <dd>{{{value}}}</dd>
+                    {{/facts}}
+                </dl>
+            {{/hasfacts}}
+        </div>
+    </div>
+
+    <div class="pagecheck-panel">
+        <div class="pagecheck-panel__head">
+            <h3 class="pagecheck-panel__title">{{#str}}restrictions, mod_pagecheck{{/str}}</h3>
+        </div>
+        <div class="pagecheck-panel__body">
+            <dl class="pagecheck-facts">
+                {{#restrictions}}
+                    <dt>{{label}}</dt>
+                    <dd>{{value}}</dd>
+                {{/restrictions}}
+            </dl>
+        </div>
+    </div>
+
+    <div class="pagecheck-panel">
+        <div class="pagecheck-panel__head">
+            <h3 class="pagecheck-panel__title">{{#str}}submittedfiles, mod_pagecheck{{/str}}</h3>
+        </div>
+        {{#hasfiles}}
+            <div class="pagecheck-panel__body">
+                <table class="pagecheck-files">
+                    <caption class="sr-only">{{#str}}submittedfiles, mod_pagecheck{{/str}}</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">{{#str}}file, mod_pagecheck{{/str}}</th>
+                            <th scope="col">{{#str}}pages, mod_pagecheck{{/str}}</th>
+                            <th scope="col">{{#str}}papersize, mod_pagecheck{{/str}}</th>
+                            <th scope="col">{{#str}}size, mod_pagecheck{{/str}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#files}}
+                            <tr class="{{#iserror}}is-error{{/iserror}}">
+                                <td><a href="{{url}}">{{filename}}</a></td>
+                                <td>
+                                    {{pages}}
+                                    <span class="pagecheck-files__meta">{{method}}</span>
+                                </td>
+                                <td>{{papersize}}</td>
+                                <td>{{size}}</td>
+                            </tr>
+                        {{/files}}
+                    </tbody>
+                </table>
+            </div>
+        {{/hasfiles}}
+        {{^hasfiles}}
+            <div class="pagecheck-empty">
+                <img src="{{emptyimage}}" alt="">
+                <p>{{emptytext}}</p>
+            </div>
+        {{/hasfiles}}
+    </div>
 </div>

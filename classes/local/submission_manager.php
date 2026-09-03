@@ -290,6 +290,8 @@ class submission_manager {
         $result = new count_result();
         $result->pages = $record->pagecount === null ? null : (int) $record->pagecount;
         $result->method = $record->countmethod;
+        $result->pagesize = $record->pagesize;
+        $result->contenthash = (string) $record->contenthash;
         $result->encrypted = (bool) $record->encrypted;
         $result->hastext = $record->hastext === null ? null : (bool) $record->hastext;
         $result->blankpages = $record->blankpages === null ? null : (int) $record->blankpages;
@@ -327,6 +329,7 @@ class submission_manager {
             'filesize' => (int) $file->get_filesize(),
             'pagecount' => $result->pages,
             'countmethod' => $result->method,
+            'pagesize' => $result->pagesize,
             'hastext' => $result->hastext === null ? null : (int) $result->hastext,
             'blankpages' => $result->blankpages,
             'encrypted' => (int) $result->encrypted,

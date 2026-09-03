@@ -184,6 +184,66 @@ class pdf_parser {
     }
 
     /**
+     * The dimensions of every page, in PostScript points.
+     *
+     * A page that does not carry its own /MediaBox inherits one from its parent node in the page
+     * tree, which is how most writers store a document of uniform size, so the parent is followed
+     * when the page itself is silent.
+     *
+     * @return array|null list of [width, height] pairs, or null when the document could not be read
+     */
+    public function get_page_sizes() {
+        if ($this->has_object_streams()) {
+            return null;
+        }
+
+        $objects = $this->get_objects();
+        $sizes = [];
+
+        foreach ($this->get_page_objects() as $body) {
+            $box = $this->find_media_box($body, $objects, 0);
+            if ($box !== null) {
+                $sizes[] = $box;
+            }
+        }
+
+        return $sizes ?: null;
+    }
+
+    /**
+     * The media box of a page, following the page tree upwards when it is inherited.
+     *
+     * @param string $body raw body of the page or page tree object
+     * @param array $objects every indexed object, to resolve the parent reference
+     * @param int $depth how far up the tree we have walked, to stop a malformed loop
+     * @return array|null [width, height], or null when there is no media box to be found
+     */
+    protected function find_media_box(string $body, array $objects, int $depth) {
+        if (preg_match('/\/MediaBox\s*\[\s*([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s+([\d.eE+-]+)\s*\]/',
+                $body, $matches)) {
+            $width = abs((float) $matches[3] - (float) $matches[1]);
+            $height = abs((float) $matches[4] - (float) $matches[2]);
+            if ($width > 0 && $height > 0) {
+                return [$width, $height];
+            }
+        }
+
+        // A page tree can nest, but not deeply, and a damaged file must not send us round forever.
+        if ($depth >= 8) {
+            return null;
+        }
+        if (!preg_match('/\/Parent\s+(\d+)\s+\d+\s+R/', $body, $parent)) {
+            return null;
+        }
+        $number = (int) $parent[1];
+        if (!isset($objects[$number])) {
+            return null;
+        }
+
+        return $this->find_media_box($objects[$number], $objects, $depth + 1);
+    }
+
+    /**
      * Whether a decoded content stream shows any text.
      *
      * @param string $content decoded page content stream

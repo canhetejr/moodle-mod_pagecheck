@@ -25,6 +25,7 @@
 namespace mod_pagecheck;
 
 use mod_pagecheck\counter\count_result;
+use mod_pagecheck\counter\page_size;
 use mod_pagecheck\local\issue;
 use mod_pagecheck\local\rules;
 use mod_pagecheck\local\validator;
@@ -362,6 +363,122 @@ class validator_test extends \advanced_testcase {
 
         $this->assertSame([], $this->codes($spare));
         $this->assertSame(['noattemptsleft'], $this->codes($spent));
+    }
+
+    /**
+     * A required paper size is enforced, and only when one was asked for.
+     *
+     * @return void
+     */
+    public function test_paper_size_is_enforced(): void {
+        $validator = new validator();
+        $letter = $this->file('report.pdf', 5, ['pagesize' => 'letter']);
+
+        $required = $validator->validate([$letter], $this->rules(['pagesize' => 'a4']));
+        $relaxed = $validator->validate([$letter], $this->rules(['pagesize' => page_size::ANY]));
+        $matching = $validator->validate([$this->file('report.pdf', 5, ['pagesize' => 'a4'])],
+            $this->rules(['pagesize' => 'a4']));
+
+        $this->assertSame(['badpagesize'], $this->codes($required));
+        $this->assertSame([], $this->codes($relaxed));
+        $this->assertSame([], $this->codes($matching));
+    }
+
+    /**
+     * A file whose paper size could not be read is not accused of having the wrong one.
+     *
+     * @return void
+     */
+    public function test_unknown_paper_size_is_not_an_accusation(): void {
+        $issues = (new validator())->validate(
+            [$this->file('report.docx', 5)],
+            $this->rules(['pagesize' => 'a4', 'allowedextensions' => ['docx']])
+        );
+
+        $this->assertSame([], $this->codes($issues));
+    }
+
+    /**
+     * Counting each file separately judges the files, not their sum.
+     *
+     * @return void
+     */
+    public function test_per_file_counting(): void {
+        $validator = new validator();
+        $files = [$this->file('a.pdf', 7), $this->file('b.pdf', 2)];
+        $base = ['minpages' => 5, 'maxpages' => 10];
+
+        $perfile = $validator->validate($files,
+            $this->rules($base + ['countmode' => rules::COUNT_PER_FILE]));
+        $total = $validator->validate($files,
+            $this->rules($base + ['countmode' => rules::COUNT_TOTAL]));
+
+        // One short file is reported once, and named.
+        $this->assertSame(['toofewpages'], $this->codes($perfile));
+        $this->assertSame('b.pdf', $perfile[0]->filename);
+        // Added together the same two files are nine pages, which is inside the range.
+        $this->assertSame([], $this->codes($total));
+    }
+
+    /**
+     * The file name pattern reads as a person expects a file name pattern to read.
+     *
+     * @return void
+     */
+    public function test_file_name_pattern(): void {
+        $validator = new validator();
+        $rules = $this->rules(['filenamepattern' => 'TCC_*.pdf']);
+
+        $this->assertSame([], $this->codes($validator->validate(
+            [$this->file('TCC_Ana.pdf', 3)], $rules)));
+        $this->assertSame(['badfilename'], $this->codes($validator->validate(
+            [$this->file('trabalho.pdf', 3)], $rules)));
+        // The dot is a dot, not "any character".
+        $this->assertSame(['badfilename'], $this->codes($validator->validate(
+            [$this->file('TCC_AnaXpdf', 3)], $this->rules([
+                'filenamepattern' => 'TCC_*.pdf',
+                'allowedextensions' => [],
+            ]))));
+    }
+
+    /**
+     * The same document attached twice is caught by its contents, not by its name.
+     *
+     * @return void
+     */
+    public function test_duplicate_files(): void {
+        $files = [
+            $this->file('report.pdf', 3, ['contenthash' => 'samehash']),
+            $this->file('report-copy.pdf', 3, ['contenthash' => 'samehash']),
+        ];
+
+        $strict = (new validator())->validate($files, $this->rules([
+            'rejectduplicates' => true,
+            'maxfiles' => 2,
+        ]));
+        $lenient = (new validator())->validate($files, $this->rules([
+            'rejectduplicates' => false,
+            'maxfiles' => 2,
+        ]));
+
+        $this->assertSame(['duplicatefile'], $this->codes($strict));
+        $this->assertSame([], $this->codes($lenient));
+    }
+
+    /**
+     * A minimum number of files is enforced alongside the maximum.
+     *
+     * @return void
+     */
+    public function test_minimum_files(): void {
+        $validator = new validator();
+        $rules = $this->rules(['minfiles' => 2]);
+
+        $short = $validator->validate([$this->file('a.pdf', 3)], $rules);
+        $enough = $validator->validate([$this->file('a.pdf', 3), $this->file('b.pdf', 3)], $rules);
+
+        $this->assertSame(['toofewfiles'], $this->codes($short));
+        $this->assertSame([], $this->codes($enough));
     }
 
     /**

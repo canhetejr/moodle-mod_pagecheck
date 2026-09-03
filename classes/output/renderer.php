@@ -25,6 +25,7 @@
 namespace mod_pagecheck\output;
 
 use mod_pagecheck\counter\count_result;
+use mod_pagecheck\counter\page_size;
 use mod_pagecheck\local\issue;
 use mod_pagecheck\local\rules;
 use mod_pagecheck\local\submission_manager;
@@ -32,9 +33,25 @@ use mod_pagecheck\local\submission_manager;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Turns the state of a submission into the tables and notices the student reads.
+ * Turns the state of a submission into what the student reads.
+ *
+ * The page count leads every screen, because it is the one thing this activity does that the
+ * assignment activity does not: a student should see whether their work is the right length
+ * without having to read a table.
  */
 class renderer extends \plugin_renderer_base {
+
+    /** @var string Everything is within the rules. */
+    const STATE_OK = 'ok';
+
+    /** @var string Something is worth telling the student about. */
+    const STATE_WARN = 'warn';
+
+    /** @var string Something stops the submission. */
+    const STATE_ERROR = 'error';
+
+    /** @var string Nothing has been counted yet. */
+    const STATE_UNKNOWN = 'unknown';
 
     /**
      * Render the list of problems found with a submission.
@@ -65,16 +82,26 @@ class renderer extends \plugin_renderer_base {
      * @param \stdClass|null $submission the attempt, or null when there is none yet
      * @param rules $rules the effective restrictions for this user
      * @param count_result[] $results the counting results, keyed by path name hash
+     * @param issue[] $issues the problems found, which decide the colour of the page count
      * @return string HTML
      */
     public function submission_status(submission_manager $manager, $submission, rules $rules,
-            array $results): string {
+            array $results, array $issues = []): string {
+        $status = $submission ? $submission->status : submission_manager::STATUS_NEW;
+
         $context = [
-            'status' => $this->status_rows($submission, $rules),
+            'statuslabel' => get_string('status_' . $status, 'mod_pagecheck'),
+            'statusstate' => $this->status_state($status, $issues),
+            'meter' => $this->meter($submission, $rules, $results, $issues),
+            'facts' => $this->fact_rows($submission, $rules),
             'restrictions' => $this->restriction_rows($rules),
             'files' => [],
             'hasfiles' => false,
+            'emptyimage' => $this->image_url('nosubmission', 'mod_pagecheck')->out(false),
+            'emptytext' => get_string('nofilesyet', 'mod_pagecheck'),
         ];
+
+        $context['hasfacts'] = !empty($context['facts']);
 
         if ($submission) {
             foreach ($manager->get_files($submission) as $file) {
@@ -92,6 +119,9 @@ class renderer extends \plugin_renderer_base {
                     'filename' => $file->get_filename(),
                     'url' => $url->out(false),
                     'pages' => $this->format_page_count($result, $rules),
+                    'papersize' => $result !== null && $result->pagesize !== null
+                        ? page_size::get_name($result->pagesize)
+                        : '-',
                     'size' => display_size($file->get_filesize()),
                     'method' => $this->format_method($result),
                     'iserror' => $result !== null && $result->error !== null,
@@ -104,19 +134,111 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
-     * The rows describing the state of the attempt.
+     * Which pill to draw beside the submission status.
+     *
+     * @param string $status the submission status
+     * @param issue[] $issues the problems found
+     * @return string one of the STATE_* constants
+     */
+    protected function status_state(string $status, array $issues): string {
+        if (issue::has_errors($issues)) {
+            return self::STATE_ERROR;
+        }
+        if ($issues) {
+            return self::STATE_WARN;
+        }
+        return $status === submission_manager::STATUS_SUBMITTED ? self::STATE_OK : 'neutral';
+    }
+
+    /**
+     * The page count set against the range that was asked for.
+     *
+     * @param \stdClass|null $submission the attempt
+     * @param rules $rules the effective restrictions
+     * @param count_result[] $results the counting results
+     * @param issue[] $issues the problems found
+     * @return array the meter context
+     */
+    protected function meter($submission, rules $rules, array $results, array $issues): array {
+        // Counting each file separately makes a single total meaningless, so the meter steps
+        // aside and lets the per file numbers in the table speak instead.
+        $perfile = $rules->countmode === rules::COUNT_PER_FILE && count($results) > 1;
+
+        if (!$submission || !$results || $perfile) {
+            return ['show' => false];
+        }
+
+        $pages = \mod_pagecheck\local\validator::total_pages($results, $rules);
+        if ($pages === null) {
+            return [
+                'show' => true,
+                'state' => self::STATE_UNKNOWN,
+                'value' => get_string('pagesunknown', 'mod_pagecheck'),
+                'unit' => '',
+                'hasrange' => false,
+                'caption' => get_string('metercannotcount', 'mod_pagecheck'),
+            ];
+        }
+
+        $min = $rules->minpages;
+        $max = $rules->maxpages;
+        $hasrange = $min > 0 || $max > 0;
+
+        $meter = [
+            'show' => true,
+            'value' => (string) $pages,
+            'unit' => get_string('pages', 'mod_pagecheck'),
+            'hasrange' => $hasrange,
+            'state' => self::STATE_OK,
+            'caption' => get_string('meterinrange', 'mod_pagecheck'),
+        ];
+
+        if (!$hasrange) {
+            $meter['state'] = 'neutral';
+            $meter['caption'] = get_string('meternorange', 'mod_pagecheck');
+            return $meter;
+        }
+
+        // The scale runs to a little past whichever is larger, the limit or what was handed in,
+        // so a submission well over the maximum still has somewhere to be drawn.
+        $ceiling = max($max > 0 ? $max : $min, $pages, 1);
+        $scale = max($ceiling * 1.1, 1);
+
+        $meter['percent'] = (int) round(min(100, ($pages / $scale) * 100));
+        $meter['bandleft'] = (int) round(($min / $scale) * 100);
+        $bandright = $max > 0 ? min(100, ($max / $scale) * 100) : 100;
+        $meter['bandwidth'] = (int) round(max(0, $bandright - $meter['bandleft']));
+        $meter['scalemin'] = '0';
+        $meter['scalemax'] = (string) (int) ceil($scale);
+        $meter['rangetext'] = $this->range_text($rules);
+
+        if ($min > 0 && $pages < $min) {
+            $meter['state'] = self::STATE_ERROR;
+            $meter['caption'] = get_string('metershort', 'mod_pagecheck', $min - $pages);
+        } else if ($max > 0 && $pages > $max) {
+            $meter['state'] = self::STATE_ERROR;
+            $meter['caption'] = get_string('meterover', 'mod_pagecheck', $pages - $max);
+        } else if ($issues) {
+            $meter['state'] = self::STATE_WARN;
+        }
+
+        // "Warn only" never paints a refusal the activity is not going to make.
+        if ($meter['state'] === self::STATE_ERROR && !issue::has_errors($issues)) {
+            $meter['state'] = self::STATE_WARN;
+        }
+
+        return $meter;
+    }
+
+    /**
+     * The dates and other facts about the attempt.
      *
      * @param \stdClass|null $submission the attempt
      * @param rules $rules the effective restrictions
      * @return array
      */
-    protected function status_rows($submission, rules $rules): array {
-        $status = $submission ? $submission->status : submission_manager::STATUS_NEW;
-
-        $rows = [[
-            'label' => get_string('submissionstatus', 'mod_pagecheck'),
-            'value' => get_string('status_' . $status, 'mod_pagecheck'),
-        ]];
+    protected function fact_rows($submission, rules $rules): array {
+        $rows = [];
 
         if ($rules->allowsubmissionsfromdate > 0) {
             $rows[] = [
@@ -142,14 +264,30 @@ class renderer extends \plugin_renderer_base {
                 'value' => userdate($submission->timesubmitted),
             ];
         }
-        if ($submission && $submission->totalpages !== null) {
-            $rows[] = [
-                'label' => get_string('totalpages', 'mod_pagecheck'),
-                'value' => (int) $submission->totalpages,
-            ];
-        }
 
         return $rows;
+    }
+
+    /**
+     * How the page range reads in words.
+     *
+     * @param rules $rules the effective restrictions
+     * @return string
+     */
+    protected function range_text(rules $rules): string {
+        if ($rules->minpages > 0 && $rules->maxpages > 0) {
+            return get_string('pagesbetween', 'mod_pagecheck', (object) [
+                'min' => $rules->minpages,
+                'max' => $rules->maxpages,
+            ]);
+        }
+        if ($rules->minpages > 0) {
+            return get_string('pagesatleast', 'mod_pagecheck', $rules->minpages);
+        }
+        if ($rules->maxpages > 0) {
+            return get_string('pagesatmost', 'mod_pagecheck', $rules->maxpages);
+        }
+        return get_string('pagesnolimit', 'mod_pagecheck');
     }
 
     /**
@@ -159,26 +297,29 @@ class renderer extends \plugin_renderer_base {
      * @return array
      */
     protected function restriction_rows(rules $rules): array {
-        $rows = [];
+        $rows = [[
+            'label' => get_string('pages', 'mod_pagecheck'),
+            'value' => $this->range_text($rules),
+        ]];
 
-        if ($rules->minpages > 0 && $rules->maxpages > 0) {
-            $pages = get_string('pagesbetween', 'mod_pagecheck', (object) [
-                'min' => $rules->minpages,
-                'max' => $rules->maxpages,
-            ]);
-        } else if ($rules->minpages > 0) {
-            $pages = get_string('pagesatleast', 'mod_pagecheck', $rules->minpages);
-        } else if ($rules->maxpages > 0) {
-            $pages = get_string('pagesatmost', 'mod_pagecheck', $rules->maxpages);
-        } else {
-            $pages = get_string('pagesnolimit', 'mod_pagecheck');
+        if ($rules->countmode === rules::COUNT_PER_FILE) {
+            $rows[] = [
+                'label' => get_string('countmode', 'mod_pagecheck'),
+                'value' => get_string('countmode_perfile', 'mod_pagecheck'),
+            ];
         }
-        $rows[] = ['label' => get_string('pages', 'mod_pagecheck'), 'value' => $pages];
 
         if ($rules->countcover > 0) {
             $rows[] = [
                 'label' => get_string('countcover', 'mod_pagecheck'),
                 'value' => $rules->countcover,
+            ];
+        }
+
+        if ($rules->pagesize !== page_size::ANY) {
+            $rows[] = [
+                'label' => get_string('papersize', 'mod_pagecheck'),
+                'value' => page_size::get_name($rules->pagesize),
             ];
         }
 
@@ -188,16 +329,29 @@ class renderer extends \plugin_renderer_base {
                 ? '.' . implode(', .', $rules->allowedextensions)
                 : get_string('anyfiletype', 'mod_pagecheck'),
         ];
+
         $rows[] = [
             'label' => get_string('maxfiles', 'mod_pagecheck'),
-            'value' => $rules->maxfiles,
+            'value' => $rules->minfiles > 0
+                ? get_string('filesbetween', 'mod_pagecheck',
+                    (object) ['min' => $rules->minfiles, 'max' => $rules->maxfiles])
+                : $rules->maxfiles,
         ];
+
+        if ($rules->filenamepattern !== '') {
+            $rows[] = [
+                'label' => get_string('filenamepattern', 'mod_pagecheck'),
+                'value' => $rules->filenamepattern,
+            ];
+        }
+
         if ($rules->maxbytes > 0) {
             $rows[] = [
                 'label' => get_string('maxbytes', 'mod_pagecheck'),
                 'value' => display_size($rules->maxbytes),
             ];
         }
+
         $rows[] = [
             'label' => get_string('maxattempts', 'mod_pagecheck'),
             'value' => $rules->maxattempts < 0
@@ -214,6 +368,9 @@ class renderer extends \plugin_renderer_base {
         }
         if ($rules->rejectblankpages) {
             $checks[] = get_string('rejectblankpages', 'mod_pagecheck');
+        }
+        if ($rules->rejectduplicates) {
+            $checks[] = get_string('rejectduplicates', 'mod_pagecheck');
         }
         if ($checks) {
             $rows[] = [

@@ -93,6 +93,11 @@ $PAGE->requires->js_call_amd('mod_pagecheck/validator', 'init', [[
     'maxbytes' => $rules->maxbytes > 0 ? $rules->maxbytes : (int) $fileoptions['maxbytes'],
     'maxfiles' => $rules->maxfiles,
     'strictness' => $rules->strictness,
+    'countmode' => $rules->countmode,
+    'filenamepattern' => $rules->filenamepattern,
+    'pagesize' => $rules->pagesize,
+    'pagesizelabels' => \mod_pagecheck\counter\page_size::get_menu()
+        + ['mixed' => get_string('pagesize_mixed', 'mod_pagecheck')],
 ]]);
 
 echo $OUTPUT->header();

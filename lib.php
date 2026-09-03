@@ -122,6 +122,8 @@ function pagecheck_prepare_instance_data($data) {
         $data->{$field} = isset($data->{$field}) ? max(0, (int) $data->{$field}) : 0;
     }
     $data->maxfiles = isset($data->maxfiles) ? max(1, (int) $data->maxfiles) : 1;
+    $data->minfiles = isset($data->minfiles) ? max(0, min((int) $data->minfiles, $data->maxfiles)) : 0;
+    $data->filenamepattern = isset($data->filenamepattern) ? trim((string) $data->filenamepattern) : '';
 }
 
 /**

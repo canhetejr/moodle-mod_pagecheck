@@ -94,6 +94,13 @@ class pdf_counter implements counter_interface {
                 }
             }
 
+            // The media box sits in the object dictionaries, which stay readable even when the
+            // streams do not, so the paper size costs nothing extra and is worth always knowing.
+            $sizes = $parser->get_page_sizes();
+            if ($sizes !== null) {
+                $result->pagesize = page_size::classify_document($sizes);
+            }
+
             // The content of an encrypted document is unreadable, so there is nothing to analyse.
             if (!empty($options['analysetext']) && !$result->encrypted) {
                 $result->hastext = $parser->has_text_layer();

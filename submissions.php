@@ -218,9 +218,19 @@ foreach ($pagerows as $row) {
             'badge bg-warning text-dark');
     }
 
+    $state = 'neutral';
+    if (issue::has_errors($row->issues)) {
+        $state = 'error';
+    } else if ($row->issues) {
+        $state = 'warn';
+    } else if ($row->status === submission_manager::STATUS_SUBMITTED) {
+        $state = 'ok';
+    }
+
     $table->data[] = [
         $name,
-        get_string('status_' . $row->status, 'mod_pagecheck'),
+        html_writer::span(get_string('status_' . $row->status, 'mod_pagecheck'),
+            'pagecheck-pill pagecheck-pill--' . $state),
         $row->pages === null ? '-' : $row->pages,
         $files ? implode(html_writer::empty_tag('br'), $files) : '-',
         $messages ? implode(html_writer::empty_tag('br'), $messages) : '-',

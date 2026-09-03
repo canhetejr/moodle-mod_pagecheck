@@ -86,17 +86,15 @@ if (has_capability('mod/pagecheck:submit', $context)) {
     $submission = $manager->get_submission($USER->id);
     $results = $submission ? $manager->analyse($submission, $rules) : [];
 
-    echo $renderer->submission_status($manager, $submission, $rules, $results);
+    $issues = $submission ? $manager->validate($USER->id, $submission) : [];
 
-    if ($submission) {
-        $issues = $manager->validate($USER->id, $submission);
-        echo $renderer->issue_list($issues);
-    } else {
-        $issues = [];
-    }
+    echo $renderer->issue_list($issues);
+    echo $renderer->submission_status($manager, $submission, $rules, $results, $issues);
 
     $canedit = $manager->can_edit($USER->id, $submission);
     $hasfiles = $submission && $manager->get_files($submission);
+
+    echo html_writer::start_div('pagecheck-actions');
 
     if ($canedit) {
         echo $OUTPUT->single_button(
@@ -115,6 +113,8 @@ if (has_capability('mod/pagecheck:submit', $context)) {
             'get'
         );
     }
+
+    echo html_writer::end_div();
 
     if (!$canedit && $submission && $submission->status === submission_manager::STATUS_SUBMITTED) {
         echo $OUTPUT->notification(get_string('alreadysubmitted', 'mod_pagecheck'),

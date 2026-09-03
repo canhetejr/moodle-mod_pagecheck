@@ -67,6 +67,12 @@ class count_result {
     /** @var int|null Number of blank pages, or null when not analysed. */
     public $blankpages = null;
 
+    /** @var string|null Paper size of the document, a page_size constant, or null when unknown. */
+    public $pagesize = null;
+
+    /** @var string Content hash of the file, used to spot the same file attached twice. */
+    public $contenthash = '';
+
     /** @var string|null Error code (a language string key) when the file could not be read. */
     public $error = null;
 
