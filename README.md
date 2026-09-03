@@ -54,6 +54,16 @@ Ghostscript é apenas um último recurso opcional, desligado por padrão.
   é analisado quanto a texto e páginas em branco: nesses casos o plugin informa "desconhecido" em
   vez de responder errado.
 
+## Avaliação
+
+O professor abre **Ver envios** e clica em **Avaliar** num aluno. A tela mostra, lado a lado, o
+trabalho como o aluno o vê — medidor de páginas, arquivos, tamanho de papel e as verificações que
+falharam — e o formulário de nota e comentário. Há navegação **anterior / próximo** e um botão
+**Salvar e ir para o próximo**, para corrigir uma turma sem voltar à lista a cada aluno.
+
+Nota e comentário vão para o livro de notas, e o aluno passa a ver os dois na tela da atividade.
+Atividades configuradas com **escala** são avaliadas pelo nome do item, não por número.
+
 ## Instalação
 
 O diretório do plugin dentro do Moodle precisa se chamar exatamente `pagecheck` — é assim que o

@@ -71,6 +71,7 @@ class provider implements
         $collection->add_database_table('pagecheck_grades', [
             'userid' => 'privacy:metadata:grades:userid',
             'grade' => 'privacy:metadata:grades:grade',
+            'feedback' => 'privacy:metadata:grades:feedback',
             'grader' => 'privacy:metadata:grades:grader',
             'timemodified' => 'privacy:metadata:grades:timemodified',
         ], 'privacy:metadata:grades');
@@ -204,6 +205,7 @@ class provider implements
                     [get_string('privacy:gradepath', 'mod_pagecheck')],
                     (object) [
                         'grade' => $grade->grade,
+                        'feedback' => $grade->feedback,
                         'timemodified' => transform::datetime($grade->timemodified),
                     ]
                 );

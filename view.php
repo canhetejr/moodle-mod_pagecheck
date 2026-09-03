@@ -25,6 +25,7 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/pagecheck/lib.php');
 
+use mod_pagecheck\local\grader;
 use mod_pagecheck\local\issue;
 use mod_pagecheck\local\submission_manager;
 
@@ -90,6 +91,9 @@ if (has_capability('mod/pagecheck:submit', $context)) {
 
     echo $renderer->issue_list($issues);
     echo $renderer->submission_status($manager, $submission, $rules, $results, $issues);
+
+    $grader = new grader($pagecheck, $context);
+    echo $renderer->grade_panel($grader, $grader->get_grade($USER->id), $context);
 
     $canedit = $manager->can_edit($USER->id, $submission);
     $hasfiles = $submission && $manager->get_files($submission);

@@ -308,3 +308,50 @@
 .path-mod-pagecheck .pagecheck-actions form {
     margin: 0;
 }
+
+/* Grading ----------------------------------------------------------------- */
+
+.path-mod-pagecheck .pagecheck-nav {
+    align-items: center;
+    border: 1px solid var(--pagecheck-border);
+    border-radius: .5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    padding: .5rem .9rem;
+}
+
+.path-mod-pagecheck .pagecheck-nav__position {
+    color: var(--pagecheck-muted);
+    font-size: .875rem;
+}
+
+.path-mod-pagecheck .pagecheck-nav__link.is-disabled {
+    color: var(--pagecheck-muted);
+    opacity: .5;
+}
+
+.path-mod-pagecheck .pagecheck-feedback {
+    border-left: 3px solid var(--pagecheck-border);
+    margin-top: .75rem;
+    padding-left: .9rem;
+}
+
+.path-mod-pagecheck .pagecheck-feedback > :last-child {
+    margin-bottom: 0;
+}
+
+.path-mod-pagecheck .pagecheck-gradelink {
+    font-size: .875rem;
+    white-space: nowrap;
+}
+
+.path-mod-pagecheck .pagecheck-gradedon {
+    font-size: .875rem;
+    margin-bottom: .75rem;
+}
+
+.path-mod-pagecheck .pagecheck-history {
+    margin-bottom: 1.5rem;
+}

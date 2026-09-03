@@ -183,6 +183,27 @@ class submission_manager {
     }
 
     /**
+     * Every attempt a user has made, oldest first.
+     *
+     * @param int $userid the user
+     * @return \stdClass[] the submission records
+     */
+    public function get_attempts(int $userid): array {
+        global $DB;
+
+        $groupid = $this->get_group_id($userid);
+        if ($groupid > 0) {
+            $where = 'pagecheckid = :pagecheckid AND groupid = :groupid';
+            $params = ['pagecheckid' => $this->pagecheck->id, 'groupid' => $groupid];
+        } else {
+            $where = 'pagecheckid = :pagecheckid AND groupid = 0 AND userid = :userid';
+            $params = ['pagecheckid' => $this->pagecheck->id, 'userid' => $userid];
+        }
+
+        return $DB->get_records_select('pagecheck_submissions', $where, $params, 'attemptnumber ASC');
+    }
+
+    /**
      * How many attempts a user has already sent for grading.
      *
      * @param int $userid the user

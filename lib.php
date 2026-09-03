@@ -235,7 +235,8 @@ function pagecheck_get_user_grades($pagecheck, $userid = 0) {
     global $DB;
 
     $params = ['pagecheckid' => $pagecheck->id];
-    $where = 'pagecheckid = :pagecheckid AND grade IS NOT NULL';
+    $where = 'pagecheckid = :pagecheckid AND (grade IS NOT NULL OR ' .
+        $DB->sql_isnotempty('pagecheck_grades', 'feedback', true, true) . ')';
     if ($userid) {
         $where .= ' AND userid = :userid';
         $params['userid'] = $userid;
@@ -247,6 +248,9 @@ function pagecheck_get_user_grades($pagecheck, $userid = 0) {
         $grades[$record->userid] = (object) [
             'userid' => $record->userid,
             'rawgrade' => $record->grade,
+            'feedback' => $record->feedback,
+            'feedbackformat' => $record->feedbackformat,
+            'usermodified' => $record->grader,
             'dategraded' => $record->timemodified,
         ];
     }

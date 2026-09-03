@@ -25,6 +25,7 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/pagecheck/lib.php');
 
+use mod_pagecheck\local\grader;
 use mod_pagecheck\local\issue;
 use mod_pagecheck\local\report;
 use mod_pagecheck\local\submission_manager;
@@ -43,7 +44,11 @@ require_login($course, false, $cm);
 require_capability('mod/pagecheck:viewallsubmissions', $context);
 
 $manager = new submission_manager($cm, $pagecheck, $context);
+$grader = new grader($pagecheck, $context);
 $cangrade = has_capability('mod/pagecheck:grade', $context);
+// Typing a number into the list only makes sense for a grade out of points; a scale is awarded
+// on the grading screen, where its items have names.
+$quickgrade = $cangrade && !$grader->uses_scale() && $grader->is_graded();
 
 $baseurl = new moodle_url('/mod/pagecheck/submissions.php', [
     'id' => $cm->id,
@@ -64,7 +69,7 @@ $participants = report::get_participants($context, (int) $pagecheck->id, (int) $
 $rows = report::build_rows($participants, $manager, $filter);
 
 // Save quick grades.
-if ($cangrade && optional_param('savegrades', 0, PARAM_BOOL) && confirm_sesskey()) {
+if ($quickgrade && optional_param('savegrades', 0, PARAM_BOOL) && confirm_sesskey()) {
     $updated = 0;
     foreach ($rows as $row) {
         $value = optional_param('grade_' . $row->user->id, null, PARAM_RAW_TRIMMED);
@@ -198,7 +203,7 @@ foreach ($pagerows as $row) {
         $messages[] = html_writer::span($issue->get_full_message(), $class);
     }
 
-    if ($cangrade) {
+    if ($quickgrade) {
         $gradecell = html_writer::empty_tag('input', [
             'type' => 'text',
             'name' => 'grade_' . $row->user->id,
@@ -208,7 +213,20 @@ foreach ($pagerows as $row) {
             'aria-label' => get_string('gradefor', 'mod_pagecheck', fullname($row->user)),
         ]);
     } else {
-        $gradecell = $row->grade === null ? '-' : format_float($row->grade, 2);
+        $gradecell = $grader->format_grade($row->grade);
+    }
+
+    if ($cangrade) {
+        $gradecell .= ' ' . html_writer::link(
+            new moodle_url('/mod/pagecheck/grade.php', [
+                'id' => $cm->id,
+                'userid' => $row->user->id,
+                'filter' => $filter,
+                'page' => $page,
+            ]),
+            get_string('gradeverb', 'mod_pagecheck'),
+            ['class' => 'pagecheck-gradelink']
+        );
     }
 
     $name = html_writer::link(new moodle_url('/user/view.php',
@@ -238,7 +256,7 @@ foreach ($pagerows as $row) {
     ];
 }
 
-if ($cangrade) {
+if ($quickgrade) {
     echo html_writer::start_tag('form', ['method' => 'post', 'action' => $baseurl->out(false)]);
     echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
     echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'savegrades', 'value' => 1]);
@@ -247,7 +265,7 @@ if ($cangrade) {
 echo html_writer::table($table);
 echo $OUTPUT->paging_bar($total, $page, $perpage, $baseurl);
 
-if ($cangrade) {
+if ($quickgrade) {
     echo html_writer::empty_tag('input', [
         'type' => 'submit',
         'class' => 'btn btn-primary',

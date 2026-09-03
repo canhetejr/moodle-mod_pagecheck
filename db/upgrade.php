@@ -63,5 +63,24 @@ function xmldb_pagecheck_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2026090400, 'pagecheck');
     }
 
+    if ($oldversion < 2026090500) {
+
+        // A grade on its own tells a student very little, so grading gained a comment.
+        $table = new xmldb_table('pagecheck_grades');
+
+        $fields = [
+            new xmldb_field('feedback', XMLDB_TYPE_TEXT, null, null, null, null, null, 'grader'),
+            new xmldb_field('feedbackformat', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'feedback'),
+        ];
+
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        upgrade_mod_savepoint(true, 2026090500, 'pagecheck');
+    }
+
     return true;
 }

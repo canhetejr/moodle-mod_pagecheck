@@ -134,6 +134,122 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * Where this student sits in the class, and the way to their neighbours.
+     *
+     * @param \stdClass|\cm_info $cm the course module
+     * @param array $neighbours the output of grader::get_neighbours()
+     * @param string $filter the filter the teacher came from
+     * @param int $page the page of the list the teacher came from
+     * @return string HTML
+     */
+    public function grading_navigation($cm, array $neighbours, string $filter, int $page): string {
+        $link = function($userid, $label) use ($cm, $filter, $page) {
+            if ($userid === null) {
+                return \html_writer::span($label, 'pagecheck-nav__link is-disabled');
+            }
+            return \html_writer::link(
+                new \moodle_url('/mod/pagecheck/grade.php', [
+                    'id' => $cm->id,
+                    'userid' => $userid,
+                    'filter' => $filter,
+                    'page' => $page,
+                ]),
+                $label,
+                ['class' => 'pagecheck-nav__link']
+            );
+        };
+
+        $position = $neighbours['total'] > 0
+            ? get_string('studentxofy', 'mod_pagecheck', (object) [
+                'position' => $neighbours['position'],
+                'total' => $neighbours['total'],
+            ])
+            : '';
+
+        return \html_writer::div(
+            $link($neighbours['previous'], get_string('previousstudent', 'mod_pagecheck'))
+            . \html_writer::span($position, 'pagecheck-nav__position')
+            . $link($neighbours['next'], get_string('nextstudent', 'mod_pagecheck')),
+            'pagecheck-nav'
+        );
+    }
+
+    /**
+     * The earlier attempts of a student, when there is more than one.
+     *
+     * @param submission_manager $manager the manager of this activity
+     * @param int $userid the student
+     * @return string HTML, empty when there is only one attempt
+     */
+    public function attempt_history(submission_manager $manager, int $userid): string {
+        $attempts = $manager->get_attempts($userid);
+        if (count($attempts) < 2) {
+            return '';
+        }
+
+        $table = new \html_table();
+        $table->head = [
+            get_string('attempt', 'mod_pagecheck'),
+            get_string('submissionstatus', 'mod_pagecheck'),
+            get_string('timesubmitted', 'mod_pagecheck'),
+            get_string('totalpages', 'mod_pagecheck'),
+        ];
+        $table->attributes['class'] = 'generaltable table pagecheck-history';
+
+        foreach ($attempts as $attempt) {
+            $table->data[] = [
+                $attempt->attemptnumber + 1,
+                get_string('status_' . $attempt->status, 'mod_pagecheck'),
+                $attempt->timesubmitted ? userdate($attempt->timesubmitted) : '-',
+                $attempt->totalpages === null ? '-' : $attempt->totalpages,
+            ];
+        }
+
+        return $this->heading(get_string('attempthistory', 'mod_pagecheck'), 3)
+            . \html_writer::table($table);
+    }
+
+    /**
+     * The grade and the comment, as the student reads them.
+     *
+     * @param \mod_pagecheck\local\grader $grader the grading service of this activity
+     * @param \stdClass|null $record the grade record, or null when there is none
+     * @param \context_module $context the module context, for formatting the comment
+     * @return string HTML, empty when nothing has been graded yet
+     */
+    public function grade_panel($grader, $record, \context_module $context): string {
+        if (!$record || ($record->grade === null && trim((string) $record->feedback) === '')) {
+            return '';
+        }
+
+        $rows = [];
+        if ($grader->is_graded() && $record->grade !== null) {
+            $rows[] = [
+                'label' => get_string('grade'),
+                'value' => $grader->format_grade($record->grade),
+            ];
+        }
+        if ($record->timemodified) {
+            $rows[] = [
+                'label' => get_string('gradedon_short', 'mod_pagecheck'),
+                'value' => userdate($record->timemodified),
+            ];
+        }
+
+        $feedback = '';
+        if (trim((string) $record->feedback) !== '') {
+            $feedback = format_text($record->feedback, (int) $record->feedbackformat,
+                ['context' => $context]);
+        }
+
+        return $this->render_from_template('mod_pagecheck/grade_panel', [
+            'rows' => $rows,
+            'hasfeedback' => $feedback !== '',
+            'feedback' => $feedback,
+        ]);
+    }
+
+    /**
      * Which pill to draw beside the submission status.
      *
      * @param string $status the submission status
