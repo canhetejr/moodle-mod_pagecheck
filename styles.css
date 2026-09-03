@@ -174,6 +174,10 @@
     background: var(--pagecheck-error);
 }
 
+.path-mod-pagecheck .pagecheck-gauge--grade .pagecheck-gauge__fill {
+    background: var(--pagecheck-ok);
+}
+
 .path-mod-pagecheck .pagecheck-gauge__caption {
     color: var(--pagecheck-muted);
     font-size: .875rem;
@@ -246,6 +250,13 @@
 
 .path-mod-pagecheck .pagecheck-facts dd {
     margin: 0;
+}
+
+@media (max-width: 560px) {
+    .path-mod-pagecheck .pagecheck-count {
+        min-width: 0;
+        text-align: left;
+    }
 }
 
 @media (max-width: 480px) {
@@ -407,10 +418,14 @@
 
 /* The submission timeline -------------------------------------------------- */
 
+/* Marker above, label below, and the joining line running between the centres of neighbouring
+ * markers, behind them. With the marker and the label side by side there was nowhere for that
+ * line to run except through the label, so it could only ever cover the gap between two items
+ * and read as a stub rather than as a connection. */
+
 .path-mod-pagecheck .pagecheck-steps {
-    counter-reset: pagecheck-step;
     display: flex;
-    gap: .25rem;
+    gap: 0;
     list-style: none;
     margin: 0 0 1.25rem;
     padding: 0;
@@ -420,20 +435,24 @@
     align-items: center;
     display: flex;
     flex: 1 1 0;
-    gap: .5rem;
+    flex-direction: column;
+    gap: .35rem;
     min-width: 0;
+    padding: 0 .25rem;
     position: relative;
+    text-align: center;
 }
 
-/* The line joining one step to the next, drawn behind the markers. */
+/* The steps are equal width with no gap between them, so -50% is the centre of the step before
+ * and 50% is the centre of this one: exactly the span the line has to cover. */
 .path-mod-pagecheck .pagecheck-step + .pagecheck-step::before {
     background: var(--pagecheck-border);
     content: "";
     height: 2px;
-    left: -.25rem;
+    left: -50%;
     position: absolute;
-    right: calc(100% - .25rem);
-    top: .85rem;
+    right: 50%;
+    top: calc(.875rem - 1px);
 }
 
 .path-mod-pagecheck .pagecheck-step.is-done + .pagecheck-step::before,
@@ -445,6 +464,9 @@
     align-items: center;
     background: var(--pagecheck-neutral-bg);
     border: 2px solid var(--pagecheck-border);
+    /* Stated here rather than relying on the theme's reset: the 2px border would otherwise sit
+     * outside the height, moving the marker's centre and leaving the joining line off by 2px. */
+    box-sizing: border-box;
     border-radius: 999px;
     color: var(--pagecheck-muted);
     display: inline-flex;
@@ -453,14 +475,15 @@
     font-weight: 600;
     height: 1.75rem;
     justify-content: center;
+    /* Above the line, so the line ends at the marker rather than crossing it. */
+    position: relative;
     width: 1.75rem;
+    z-index: 1;
 }
 
 .path-mod-pagecheck .pagecheck-step__label {
     font-size: .875rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.3;
 }
 
 .path-mod-pagecheck .pagecheck-step.is-done .pagecheck-step__marker {
@@ -489,14 +512,31 @@
     50% { box-shadow: 0 0 0 .35rem rgba(31, 122, 69, 0); }
 }
 
-@media (max-width: 560px) {
+/* Narrow screens stack the steps, and the line turns to run down the side of the markers. */
+@media (max-width: 480px) {
     .path-mod-pagecheck .pagecheck-steps {
-        flex-direction: column;
-        gap: .5rem;
+        display: block;
     }
 
+    .path-mod-pagecheck .pagecheck-step {
+        align-items: center;
+        flex-direction: row;
+        gap: .6rem;
+        padding: 0 0 .6rem;
+        text-align: left;
+    }
+
+    .path-mod-pagecheck .pagecheck-step:last-child {
+        padding-bottom: 0;
+    }
+
+    /* Stacked, the gap between two markers is exactly the padding below the step above. */
     .path-mod-pagecheck .pagecheck-step + .pagecheck-step::before {
-        display: none;
+        height: .6rem;
+        left: calc(.875rem - 1px);
+        right: auto;
+        top: -.6rem;
+        width: 2px;
     }
 }
 
