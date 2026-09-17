@@ -3,6 +3,16 @@
 All notable changes to mod_pagecheck are recorded here. The plugin follows
 [semantic versioning](https://semver.org/) for its release names.
 
+## [0.4.1] - 2026-09-17
+
+### Fixed
+- The built AMD module was a plain copy of its source rather than a real build, which the plugins
+  directory review flagged as a packaging blocker. `amd/build/validator.min.js` is now minified and
+  carries the module name in its `define()` call, the way Moodle's grunt task produces it, and a
+  source map ships alongside it. The file went from 14,805 to 4,867 bytes; the source is unchanged,
+  and both the source and the built module were run through the same file picker events to confirm
+  they still decide identically.
+
 ## [0.4.0] - 2026-09-09
 
 First release published to the Moodle plugins directory.
