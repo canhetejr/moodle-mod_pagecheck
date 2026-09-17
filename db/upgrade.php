@@ -40,7 +40,7 @@ function xmldb_pagecheck_upgrade($oldversion) {
         $fields = [
             new xmldb_field('pagesize', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'any', 'strictness'),
             new xmldb_field('countmode', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'total', 'pagesize'),
-            new xmldb_field('filenamepattern', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '', 'countmode'),
+            new xmldb_field('filenamepattern', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'countmode'),
             new xmldb_field('rejectduplicates', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'filenamepattern'),
             new xmldb_field('minfiles', XMLDB_TYPE_INTEGER, '5', null, XMLDB_NOTNULL, null, '0', 'rejectduplicates'),
         ];

@@ -35,7 +35,7 @@
         <FIELD NAME="strictness" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="block" SEQUENCE="false" COMMENT="warn or block."/>
         <FIELD NAME="pagesize" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="any" SEQUENCE="false" COMMENT="Required paper size, or any."/>
         <FIELD NAME="countmode" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="total" SEQUENCE="false" COMMENT="Whether the page range applies to the whole submission or to each file."/>
-        <FIELD NAME="filenamepattern" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="Pattern each file name has to match, with * and ? as wildcards."/>
+        <FIELD NAME="filenamepattern" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Pattern each file name has to match, with * and ? as wildcards."/>
         <FIELD NAME="rejectduplicates" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="minfiles" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="100" SEQUENCE="false"/>
@@ -73,10 +73,10 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="submissionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="pathnamehash" TYPE="char" LENGTH="40" NOTNULL="true" DEFAULT="" SEQUENCE="false"/>
-        <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true" DEFAULT="" SEQUENCE="false"/>
-        <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="" SEQUENCE="false"/>
-        <FIELD NAME="mimetype" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="" SEQUENCE="false"/>
+        <FIELD NAME="pathnamehash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="mimetype" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="filesize" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="pagecount" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="countmethod" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="unknown" SEQUENCE="false"/>
