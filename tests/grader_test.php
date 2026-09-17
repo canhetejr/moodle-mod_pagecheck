@@ -31,7 +31,7 @@ use mod_pagecheck\local\grader;
  *
  * @covers \mod_pagecheck\local\grader
  */
-class grader_test extends \advanced_testcase {
+final class grader_test extends \advanced_testcase {
     /** @var \stdClass The course the activity lives in. */
     protected $course;
 

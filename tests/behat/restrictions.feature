@@ -17,7 +17,6 @@ Feature: Page restrictions on a submission
       | teacher1 | C1     | editingteacher |
       | student1 | C1     | student        |
 
-  @javascript
   Scenario: A teacher configures a page range
     Given the following "activities" exist:
       | activity  | course | name  |

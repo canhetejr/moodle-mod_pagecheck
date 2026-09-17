@@ -31,7 +31,7 @@ use mod_pagecheck\local\rules;
  *
  * @covers \mod_pagecheck\local\rules
  */
-class rules_test extends \advanced_testcase {
+final class rules_test extends \advanced_testcase {
     /** @var \stdClass The course the activity lives in. */
     protected $course;
 

@@ -37,7 +37,7 @@ use mod_pagecheck\local\validator;
  * @covers \mod_pagecheck\local\rules
  * @covers \mod_pagecheck\local\issue
  */
-class validator_test extends \advanced_testcase {
+final class validator_test extends \advanced_testcase {
     /**
      * A counted file, described in one line.
      *
