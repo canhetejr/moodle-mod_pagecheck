@@ -376,11 +376,22 @@ class validator_test extends \advanced_testcase {
         $file = [$this->file('report.pdf', 7)];
         $rules = $this->rules(['maxattempts' => 2]);
 
-        $spare = $validator->validate($file, $rules, ['attemptsused' => 1]);
-        $spent = $validator->validate($file, $rules, ['attemptsused' => 2]);
+        $spare = $validator->validate($file, $rules, [
+            'attemptsused' => 1,
+            'forsubmission' => true,
+        ]);
+        $spent = $validator->validate($file, $rules, [
+            'attemptsused' => 2,
+            'forsubmission' => true,
+        ]);
 
         $this->assertSame([], $this->codes($spare));
         $this->assertSame(['noattemptsleft'], $this->codes($spent));
+
+        // Someone merely looking at a submission they already sent is not trying to send another
+        // one, so the spent allowance is not their problem and is not reported to them.
+        $looking = $validator->validate($file, $rules, ['attemptsused' => 2]);
+        $this->assertSame([], $this->codes($looking));
     }
 
     /**

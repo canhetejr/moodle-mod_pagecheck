@@ -170,8 +170,11 @@ class grader {
             return isset($menu[$key]) ? [true, (float) $key] : [false, null];
         }
 
-        $grade = unformat_float((string) $value);
-        if ($grade === false || $grade === null || !is_numeric($grade)) {
+        // Without the strict flag unformat_float() casts, so a word comes back as 0.0 and a
+        // teacher who types one would silently award a zero. Asking it to reject non-numbers is
+        // the only way to tell "0" from "excellent" here.
+        $grade = unformat_float((string) $value, true);
+        if ($grade === false || $grade === null) {
             return [false, null];
         }
         if ($grade < 0 || $grade > $this->get_max_grade()) {
