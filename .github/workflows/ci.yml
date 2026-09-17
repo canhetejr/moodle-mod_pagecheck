@@ -94,13 +94,14 @@ jobs:
       - name: Capture what grunt built
         if: ${{ !cancelled() }}
         run: |
-          cd "$PLUGIN_DIR/amd/build"
-          sha256sum ./*
+          dir="$GITHUB_WORKSPACE/moodle/mod/pagecheck/amd/build"
+          ls -la "$dir"
+          sha256sum "$dir"/*
           echo "PAGECHECK_JS_BEGIN"
-          base64 -w0 validator.min.js
+          base64 -w0 "$dir/validator.min.js"
           echo
           echo "PAGECHECK_MAP_BEGIN"
-          base64 -w0 validator.min.js.map
+          base64 -w0 "$dir/validator.min.js.map"
           echo
           echo "PAGECHECK_CAPTURE_END"
 
