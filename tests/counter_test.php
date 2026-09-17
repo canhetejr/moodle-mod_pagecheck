@@ -46,7 +46,7 @@ require_once($CFG->dirroot . '/mod/pagecheck/tests/fixtures/file_builder.php');
  * @covers \mod_pagecheck\counter\counter_factory
  * @covers \mod_pagecheck\counter\page_size
  */
-class counter_test extends \advanced_testcase {
+final class counter_test extends \advanced_testcase {
     /** @var string A directory the test may write sample documents into. */
     protected $dir;
 
