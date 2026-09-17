@@ -8,14 +8,17 @@ jobs:
 
     services:
       postgres:
-        image: postgres:13
+        # Moodle 5.0 refuses to install on anything older than PostgreSQL 14, so 13 failed the
+        # environment check before it wrote a config file. Moodle only enforces a minimum, which
+        # is why one recent server serves every branch in the matrix.
+        image: postgres:16
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready --health-interval 10s
+          --health-cmd "pg_isready -U postgres" --health-interval 10s
           --health-timeout 5s --health-retries 3
 
     strategy:
