@@ -1,0 +1,88 @@
+name: Release
+
+# Cuts the tag and the release from what version.php declares, once CI has passed on main.
+# Nothing here runs against a red build: the trigger is the CI run finishing, and the job stops
+# unless that run succeeded.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Tag and publish
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Check out the commit CI tested
+        uses: actions/checkout@v4
+        with:
+          # Not the branch tip: the commit that actually passed, which may no longer be the tip.
+          ref: ${{ github.event.workflow_run.head_sha }}
+          # git archive reads a commit, so the full history has to be present.
+          fetch-depth: 0
+
+      - name: Read the release name out of version.php
+        id: version
+        run: |
+          # Requiring version.php outside Moodle dies on MOODLE_INTERNAL and then on
+          # MATURITY_BETA, so read the line rather than run the file.
+          release=$(sed -n "s/^\$plugin->release[[:space:]]*=[[:space:]]*'\([^']*\)'.*/\1/p" version.php)
+          if [ -z "$release" ]; then
+            echo "version.php declares no release name." >&2
+            exit 1
+          fi
+          echo "tag=v$release" >> "$GITHUB_OUTPUT"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          echo "Version.php declares $release."
+
+      - name: Stop if that tag is already published
+        id: check
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "${{ steps.version.outputs.tag }} exists already; nothing to release."
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the package
+        if: steps.check.outputs.fresh == 'true'
+        run: tools/package.sh "${{ github.event.workflow_run.head_sha }}"
+
+      - name: Check the archive has the root folder Moodle expects
+        if: steps.check.outputs.fresh == 'true'
+        run: |
+          unzip -l dist/pagecheck.zip | grep -q 'pagecheck/version.php'
+          ! unzip -l dist/pagecheck.zip | grep -q '\.github/'
+
+      - name: Take the notes for this version out of the changelog
+        if: steps.check.outputs.fresh == 'true'
+        run: |
+          # Everything under this version's heading, up to the next one.
+          awk -v want="## [${{ steps.version.outputs.release }}]" '
+            index($0, want) == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "The changelog has no entry for ${{ steps.version.outputs.release }}." >&2
+            exit 1
+          fi
+          cat notes.md
+
+      - name: Publish the tag and the release
+        if: steps.check.outputs.fresh == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.event.workflow_run.head_sha }}
+          name: ${{ steps.version.outputs.tag }}
+          body_path: notes.md
+          files: dist/pagecheck.zip
+          make_latest: true
