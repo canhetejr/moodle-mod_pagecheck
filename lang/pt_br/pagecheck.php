@@ -57,6 +57,7 @@ $string['countmode'] = 'Aplicar o intervalo de páginas a';
 $string['countmode_help'] = 'Se o mínimo e o máximo de páginas descrevem o envio inteiro ou cada arquivo anexado separadamente. Com apenas um arquivo permitido, as duas opções dão no mesmo.';
 $string['countmode_perfile'] = 'Cada arquivo separadamente';
 $string['countmode_total'] = 'O envio inteiro';
+$string['courseuploadlimit'] = 'Limite de envio do curso';
 $string['cutoffdate'] = 'Data limite';
 $string['cutoffdate_help'] = 'Depois desta data nada é aceito, independentemente da data de entrega.';
 $string['deleteallsubmissions'] = 'Excluir todos os envios';

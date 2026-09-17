@@ -57,6 +57,7 @@ $string['countmode'] = 'Apply the page range to';
 $string['countmode_help'] = 'Whether the minimum and maximum pages describe the submission as a whole, or each attached file on its own. With one file allowed the two are the same thing.';
 $string['countmode_perfile'] = 'Each file on its own';
 $string['countmode_total'] = 'The whole submission';
+$string['courseuploadlimit'] = 'Course upload limit';
 $string['cutoffdate'] = 'Cut off date';
 $string['cutoffdate_help'] = 'After this date nothing is accepted, whatever the due date says.';
 $string['deleteallsubmissions'] = 'Delete every submission';
