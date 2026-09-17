@@ -3,6 +3,29 @@
 All notable changes to mod_pagecheck are recorded here. The plugin follows
 [semantic versioning](https://semver.org/) for its release names.
 
+## [0.4.2] - 2026-09-17
+
+The test suite ran in CI for the first time, on Moodle 4.1, 4.5 and 5.0. It found
+two defects that had been in the plugin all along.
+
+### Fixed
+- The grade box accepted a word. `parse_grade()` asked `unformat_float()` for a number without
+  the strict flag, and that function casts rather than rejects, so `excellent` came back as
+  `0.0` — and the guard meant to catch it tested the cast result, which is numeric. A teacher who
+  typed a word, or `7 marks` instead of `7`, silently awarded a zero, which looks like a
+  deliberate grade and so would never be questioned.
+- The settings form showed `[[courseuploadlimit]]` in the file size menu. Moodle core has no such
+  string; the plugin now owns it, in both languages.
+- Five `CHAR NOT NULL` columns declared an empty default, which made Moodle emit a warning during
+  installation. XMLDB was already discarding that default, so no installed site is affected and
+  no upgrade step is needed.
+- `amd/build/validator.min.js` is now the output of Moodle's own grunt rather than a file built to
+  match it. The three supported branches produce it byte for byte identically.
+
+### Changed
+- Language strings are in the alphabetical order the coding standard asks for: 272 in each file,
+  with every key and value unchanged.
+
 ## [0.4.1] - 2026-09-17
 
 ### Fixed
