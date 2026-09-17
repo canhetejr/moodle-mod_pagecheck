@@ -27,7 +27,9 @@ Feature: Page restrictions on a submission
       | Minimum pages | 5  |
       | Maximum pages | 10 |
     And I press "Save and display"
-    Then I should see "Between 5 and 10"
+    And I navigate to "Settings" in current page administration
+    Then the field "Minimum pages" matches value "5"
+    And the field "Maximum pages" matches value "10"
 
   @javascript
   Scenario: A student sees the restrictions before submitting
