@@ -75,7 +75,7 @@ class counter_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function pdf_page_count_provider(): array {
+    public static function pdf_page_count_provider(): array {
         return [
             'single page' => [1, []],
             'three pages' => [3, []],
@@ -267,7 +267,7 @@ class counter_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function paper_size_provider(): array {
+    public static function paper_size_provider(): array {
         return [
             'a4' => ['a4', [595.276, 841.89]],
             'a4 landscape' => ['a4', [841.89, 595.276]],

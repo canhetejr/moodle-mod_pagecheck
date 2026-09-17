@@ -19,13 +19,16 @@ Feature: Page restrictions on a submission
 
   @javascript
   Scenario: A teacher configures a page range
-    Given I am on the "Course 1" course page logged in as teacher1
-    When I add a "Submission with page check" to section "1" and I fill the form with:
-      | Activity name    | Essay |
-      | Minimum pages    | 5     |
-      | Maximum pages    | 10    |
-    Then I am on the "Essay" "pagecheck activity" page
-    And I should see "Between 5 and 10"
+    Given the following "activities" exist:
+      | activity  | course | name  |
+      | pagecheck | C1     | Essay |
+    And I am on the "Essay" "pagecheck activity" page logged in as teacher1
+    When I navigate to "Settings" in current page administration
+    And I set the following fields to these values:
+      | Minimum pages | 5  |
+      | Maximum pages | 10 |
+    And I press "Save and display"
+    Then I should see "Between 5 and 10"
 
   @javascript
   Scenario: A student sees the restrictions before submitting
