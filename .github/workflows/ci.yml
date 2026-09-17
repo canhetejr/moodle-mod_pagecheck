@@ -89,6 +89,21 @@ jobs:
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci grunt --max-lint-warnings 0
 
+      # Temporary: hand back exactly what Moodle's own grunt produced, so the built AMD module
+      # committed here can be the toolchain's output rather than a close imitation of it.
+      - name: Capture what grunt built
+        if: ${{ !cancelled() }}
+        run: |
+          cd "$PLUGIN_DIR/amd/build"
+          sha256sum ./*
+          echo "PAGECHECK_JS_BEGIN"
+          base64 -w0 validator.min.js
+          echo
+          echo "PAGECHECK_MAP_BEGIN"
+          base64 -w0 validator.min.js.map
+          echo
+          echo "PAGECHECK_CAPTURE_END"
+
       - name: PHPUnit
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phpunit --fail-on-warning

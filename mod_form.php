@@ -150,7 +150,8 @@ class mod_pagecheck_mod_form extends moodleform_mod {
             0,
             !empty($config->maxbytes) ? $config->maxbytes : 0
         );
-        $choices[0] = get_string('courseuploadlimit') . ' (' . display_size($COURSE->maxbytes) . ')';
+        $choices[0] = get_string('courseuploadlimit', 'mod_pagecheck')
+            . ' (' . display_size($COURSE->maxbytes) . ')';
         $mform->addElement('select', 'maxbytes', get_string('maxbytes', 'mod_pagecheck'), $choices);
         $mform->addHelpButton('maxbytes', 'maxbytes', 'mod_pagecheck');
         $mform->setDefault('maxbytes', 0);
